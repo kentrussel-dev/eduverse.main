@@ -1,41 +1,50 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeModeProvider } from './contexts/ThemeModeContext';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Dashboard } from './pages/Dashboard';
+import { LandingPage } from './pages/LandingPage';
+import { Navbar } from './components/Navbar';
+import { Box } from '@mui/material';
+import { theme } from './theme/theme';
 import './App.css';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
+const AppContent = () => {
+  const location = useLocation();
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+
+  return (
+    <Box sx={{ minHeight: '100vh' }}>
+      <Navbar />
+      <Box sx={{ pt: { xs: 0, sm: isAuthPage ? 0 : 8 } }}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/" element={<LandingPage />} />
+        </Routes>
+      </Box>
+    </Box>
+  );
+};
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/" element={<Login />} />
-          </Routes>
-        </Router>
-      </AuthProvider>
+      <ThemeModeProvider>
+        <AuthProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AuthProvider>
+      </ThemeModeProvider>
     </ThemeProvider>
   );
 }
