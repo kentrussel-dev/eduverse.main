@@ -30,6 +30,36 @@ src/
 - 🌐 Integration with RESTful backend API
 - ⚡ Type-safe development with TypeScript
 
+## Environment Variables and Secrets Management
+
+The frontend uses environment variables for configuration. These should never be committed to the repository.
+
+1. **Local Development**:
+   - Create a `.env.local` file in the project root
+   - Required variables:
+   ```
+   REACT_APP_API_URL=http://localhost:5000/api
+   REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id
+   ```
+   - Optional variables:
+   ```
+   REACT_APP_ENV=development
+   REACT_APP_AUTH_COOKIE_NAME=eduverse_auth
+   ```
+
+2. **Production Deployment**:
+   - Use deployment platform's environment configuration:
+     - Vercel: Environment Variables section
+     - Netlify: Environment Variables in site settings
+     - Docker: Use environment files or Docker secrets
+   - Never commit `.env` files
+   - Use different values for each environment
+
+3. **Template**:
+   - A `.env.template` file is provided as reference
+   - Copy to `.env.local` and update with your values
+   - The `.gitignore` file excludes all `.env*` files except templates
+
 ## Getting Started
 
 1. Install dependencies:
