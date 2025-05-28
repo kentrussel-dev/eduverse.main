@@ -23,9 +23,11 @@ export const Dashboard = () => {
                 </Typography>
                 <Typography variant="body1" gutterBottom>
                     You are logged in as: {user?.email}
+                </Typography>                <Typography variant="body1" gutterBottom>
+                    Role: {user?.isTeacher ? 'Teacher' : 'Student'}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                    Role: {user?.isTeacher ? 'Teacher' : 'Student'}
+                    Account Type: {user?.accountType}
                 </Typography>
                 <Box sx={{ mt: 4 }}>
                     <Button

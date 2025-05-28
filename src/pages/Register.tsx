@@ -75,7 +75,7 @@ export const Register = () => {
                 navigate('/login');
             }, 3000);
         } catch (err: any) {
-            setError(err.response?.data || 'Registration failed');
+            setError(err.response?.data?.message || err.response?.data || 'Registration failed');
         } finally {
             setLoading(false);
         }
