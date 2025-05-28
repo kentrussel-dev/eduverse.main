@@ -2,6 +2,10 @@
 
 A modern React-based frontend for the EduVerse educational platform.
 
+🖥️ **Backend Repository**: [eduverse.server](https://github.com/kentrussel-dev/eduverse.server)
+
+This is the frontend application component. For the ASP.NET Core backend service, please visit the backend repository.
+
 ## Tech Stack
 
 - **Frontend Framework**: React 18 with TypeScript
