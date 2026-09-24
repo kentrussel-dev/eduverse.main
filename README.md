@@ -14,6 +14,7 @@ This is the frontend application component. For the ASP.NET Core backend service
 - **Authentication**: OAuth 2.0 (Google Sign-in)
 - **HTTP Client**: Axios
 - **Routing**: React Router v6
+- **Virtual world**: PixiJS 7 (2D isometric rendering) + SignalR (real-time)
 
 ## Project Structure
 
@@ -23,8 +24,33 @@ src/
 ├── contexts/           # React Context providers
 ├── pages/             # Page components
 ├── services/          # API services
-└── types/             # TypeScript type definitions
+├── types/             # TypeScript type definitions
+└── world/             # Virtual world: renderer, server connection, game UI
 ```
+
+## Virtual World (`/world`)
+
+A Habbo-style isometric world where students and teachers walk around as avatars, chat, decorate their own rooms and hold classes.
+It connects to the server's SignalR hub (`/hubs/world`, next to `REACT_APP_API_URL`) using the JWT saved at login.
+
+- `src/pages/World.tsx`: the page (navigator, chat, people, host tools, action bar)
+- `src/world/useWorld.ts`: connection and room state
+- `src/world/RoomScene.ts`: PixiJS scene (floor, walls, furniture, walking, chat bubbles, emotes, build mode, camera)
+- `src/world/avatar.ts`, `src/world/furni.ts`, `src/world/iso.ts`: drawing code; everything is drawn with shapes, so there are no image assets yet
+- `src/world/worldClient.ts`: typed wrapper for the hub methods
+- `src/world/ui/`: character creator, shop, build panel, room settings, create-room dialog
+- `src/world/thumbnails.ts`: renders furniture and avatar pictures for the shop and menus
+
+How to play:
+
+- Click the floor to walk and click a chair, sofa or beanbag to sit. The action bar has dance, wave, sit and emoji reactions.
+- Click a person to whisper to them or report them. Room hosts can also mute or kick, and owners can ban.
+- 👕 Character: hair styles, tops, bottoms, hats and colors. Locked items are bought in the 🛍️ shop with coins (daily coins are free).
+- 🧱 Build mode (in rooms you own): pick furniture from your inventory, rotate it, click the floor to place it; click placed furniture to rotate or pick it up.
+- ⚙️ Room settings (owners): name, who can find it, max visitors, banned list, delete.
+- Navigator: Public / Popular / My rooms tabs, search, and join by room code. Teachers can create classrooms and share the code.
+
+Browser tests can build with `REACT_APP_E2E=true` to expose `window.eduverseScene` for clicking exact tiles.
 
 ## Features
 
@@ -33,6 +59,7 @@ src/
 - 🎨 Modern, responsive UI with Material-UI
 - 🌐 Integration with RESTful backend API
 - ⚡ Type-safe development with TypeScript
+- 🏫 Virtual world with rooms, avatars, chat and classrooms
 
 ## Environment Variables and Secrets Management
 

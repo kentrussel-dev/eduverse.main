@@ -2,6 +2,24 @@ import axios from 'axios';
 import { LoginFormData, RegisterFormData, User } from '../types/auth.types';
 
 const API_URL = process.env.REACT_APP_API_URL;
+const TOKEN_KEY = 'eduverse_token';
+
+export const tokenStore = {
+    get: () => localStorage.getItem(TOKEN_KEY),
+    set: (token?: string) => {
+        if (token) localStorage.setItem(TOKEN_KEY, token);
+    },
+    clear: () => localStorage.removeItem(TOKEN_KEY),
+};
+
+// Send the saved sign-in token with every API call.
+axios.interceptors.request.use((config) => {
+    const token = tokenStore.get();
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
 
 export const authService = {
     async login(data: LoginFormData) {
@@ -43,6 +61,7 @@ export const authService = {
             const response = await axios.get(`${API_URL}/auth/me`, { withCredentials: true });
             return response.data;
         } catch (error) {
+            tokenStore.clear();
             return null;
         }
     }

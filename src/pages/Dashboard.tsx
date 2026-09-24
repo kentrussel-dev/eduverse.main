@@ -29,9 +29,16 @@ export const Dashboard = () => {
                 <Typography variant="body1" gutterBottom>
                     Account Type: {user?.accountType}
                 </Typography>
-                <Box sx={{ mt: 4 }}>
+                <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
                     <Button
                         variant="contained"
+                        color="secondary"
+                        onClick={() => navigate('/world')}
+                    >
+                        Enter the EduVerse world
+                    </Button>
+                    <Button
+                        variant="outlined"
                         color="primary"
                         onClick={handleLogout}
                     >

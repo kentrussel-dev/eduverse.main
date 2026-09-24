@@ -1,11 +1,13 @@
 import { AppBar, Box, Button, Toolbar, Typography, useTheme } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import EVLogo from '../assets/EV_LOGO.png';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Navbar = () => {
     const navigate = useNavigate();
     const theme = useTheme();
     const location = useLocation();
+    const { user } = useAuth();
 
     const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
@@ -57,7 +59,24 @@ export const Navbar = () => {
                         EduVerse
                     </Typography>
                 </Box>
-                {!isAuthPage && (
+                {!isAuthPage && user && (
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Button color="inherit" onClick={() => navigate('/dashboard')} sx={{ textTransform: 'none' }}>
+                            Dashboard
+                        </Button>
+                        <Button
+                            variant="contained"
+                            onClick={() => navigate('/world')}
+                            sx={{
+                                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                                textTransform: 'none',
+                            }}
+                        >
+                            Enter World
+                        </Button>
+                    </Box>
+                )}
+                {!isAuthPage && !user && (
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                         <Button
                             color="inherit"
