@@ -29,6 +29,8 @@ export interface AvatarLook {
     shoes: string;
     hat: string;
     hatColor: string;
+    /** 'boy' or 'girl': which clothes the character editor shows. */
+    gender?: 'boy' | 'girl';
 }
 
 export const defaultLook: AvatarLook = {
@@ -164,5 +166,5 @@ export interface CreateRoomRequest {
     name: string;
     description: string;
     kind: RoomKind;
-    template: 'classroom' | 'study_hall' | 'lounge' | 'empty';
+    template: 'apartment' | 'house' | 'classroom' | 'study_hall' | 'lounge' | 'empty';
 }

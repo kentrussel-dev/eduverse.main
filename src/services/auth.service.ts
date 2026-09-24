@@ -4,6 +4,10 @@ import { LoginFormData, RegisterFormData, User } from '../types/auth.types';
 const API_URL = process.env.REACT_APP_API_URL;
 const TOKEN_KEY = 'eduverse_token';
 
+/**
+ * Signing in gives a token. The server also keeps it in a cookie so the browser stays signed
+ * in; the app keeps a copy here to send to the world server and with API calls.
+ */
 export const tokenStore = {
     get: () => localStorage.getItem(TOKEN_KEY),
     set: (token?: string) => {
@@ -12,7 +16,8 @@ export const tokenStore = {
     clear: () => localStorage.removeItem(TOKEN_KEY),
 };
 
-// Send the saved sign-in token with every API call.
+// Send the sign-in cookie and the saved token with every API call.
+axios.defaults.withCredentials = true;
 axios.interceptors.request.use((config) => {
     const token = tokenStore.get();
     if (token) {
@@ -21,36 +26,43 @@ axios.interceptors.request.use((config) => {
     return config;
 });
 
+const messageOf = (error: any, fallback: string) => {
+    const data = error?.response?.data;
+    if (typeof data === 'string' && data) return data;
+    return data?.message || data?.Message || fallback;
+};
+
 export const authService = {
-    async login(data: LoginFormData) {
+    async login(data: LoginFormData): Promise<User> {
         try {
             const response = await axios.post(`${API_URL}/auth/login`, data);
             tokenStore.set(response.data.token);
             return response.data;
         } catch (error: any) {
-            if (error.response?.status === 401 && error.response?.data.includes('confirm')) {
-                throw new Error('Please confirm your email address before logging in. Check your inbox for the confirmation link.');
-            } else if (error.response?.status === 400 || error.response?.status === 401) {
-                throw new Error('Invalid email or password');
-            }
-            throw error;
+            if (!error.response) throw new Error('Could not reach the server. Is it running?');
+            throw new Error(messageOf(error, 'Invalid email or password'));
         }
     },
 
-    async register(data: RegisterFormData) {
-        const response = await axios.post(`${API_URL}/auth/register`, data);
-        return response.data;
-    },
-
-    async getCurrentUser() {
-        const response = await axios.get(`${API_URL}/auth/me`);
-        return response.data;
+    /** Creates the account and signs you in. */
+    async register(data: RegisterFormData): Promise<User> {
+        try {
+            const response = await axios.post(`${API_URL}/auth/register`, data);
+            tokenStore.set(response.data.token);
+            return response.data;
+        } catch (error: any) {
+            if (!error.response) throw new Error('Could not reach the server. Is it running?');
+            throw new Error(messageOf(error, 'Registration failed.'));
+        }
     },
 
     async logout() {
-        tokenStore.clear();
-        const response = await axios.post(`${API_URL}/auth/logout`);
-        return response.data;
+        try {
+            // The server clears the sign-in cookie.
+            await axios.post(`${API_URL}/auth/logout`);
+        } finally {
+            tokenStore.clear();
+        }
     },
 
     async googleLogin() {
@@ -58,14 +70,15 @@ export const authService = {
         return new Promise<User>(() => { }); // This promise will never resolve due to redirect
     },
 
-    async checkAuthStatus() {
+    /** Who is signed in (from the saved token or the sign-in cookie), or null. */
+    async checkAuthStatus(): Promise<User | null> {
         try {
-            const response = await axios.get(`${API_URL}/auth/me`, { withCredentials: true });
+            const response = await axios.get(`${API_URL}/auth/me`);
             tokenStore.set(response.data.token);
             return response.data;
-        } catch (error) {
-            tokenStore.clear();
+        } catch (error: any) {
+            if (error?.response?.status === 401) tokenStore.clear();
             return null;
         }
-    }
+    },
 };

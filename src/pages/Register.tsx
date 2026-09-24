@@ -16,6 +16,7 @@ export const Register = () => {
     const navigate = useNavigate();
     const { register, googleLogin } = useAuth();
     const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '', isTeacher: false });
+    const [gender, setGender] = useState<'boy' | 'girl'>('boy');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
@@ -34,11 +35,11 @@ export const Register = () => {
         }
         setLoading(true);
         try {
-            await register(form.email, form.password, `${form.firstName} ${form.lastName}`.trim(), form.isTeacher);
-            setSuccess('Account created! Check your email for the confirmation link, then sign in.');
-            setTimeout(() => navigate('/login'), 4000);
+            await register(form.email, form.password, `${form.firstName} ${form.lastName}`.trim(), form.isTeacher, gender);
+            setSuccess('Welcome to EduVerse!');
+            navigate('/dashboard');
         } catch (err: any) {
-            setError(err?.response?.data?.message || (err instanceof Error ? err.message : 'Registration failed.'));
+            setError(err instanceof Error ? err.message : 'Registration failed.');
         } finally {
             setLoading(false);
         }
@@ -62,6 +63,18 @@ export const Register = () => {
                             <Field label="Confirm password" type="password" required value={form.confirmPassword} onChange={set('confirmPassword')} autoComplete="new-password" />
                             <Box sx={{ fontSize: 11.5, color: site.muted, mt: -0.5, mb: 1.25 }}>
                                 At least 6 characters, with an uppercase letter and a number. Other players only see your first name and last initial.
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, fontSize: 12.5, fontWeight: 700 }}>
+                                I’m a:
+                                {(['boy', 'girl'] as const).map((g) => (
+                                    <Box key={g} component="label" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}>
+                                        <input type="radio" name="gender" checked={gender === g} onChange={() => setGender(g)} />
+                                        {g === 'boy' ? 'Boy' : 'Girl'}
+                                    </Box>
+                                ))}
+                            </Box>
+                            <Box sx={{ fontSize: 11.5, color: site.muted, mt: -0.5, mb: 1 }}>
+                                You’ll start with a random character to match. Change it anytime.
                             </Box>
                             <Box component="label" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, fontSize: 12.5, fontWeight: 700 }}>
                                 <input type="checkbox" checked={form.isTeacher} onChange={set('isTeacher')} />
