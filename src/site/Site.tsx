@@ -125,6 +125,7 @@ const tabs = [
     { label: 'Home', to: '/' },
     { label: 'Hotel', to: '/world' },
     { label: 'Safety', to: '/#safety', wideOnly: true },
+    { label: 'Credits', href: `${process.env.PUBLIC_URL ?? ''}/avatar/lpc/CREDITS.md`, wideOnly: true },
 ];
 
 /** Page frame: sky, logo header, tab bar, content, footer. */
@@ -170,7 +171,9 @@ export const SiteLayout = ({ children }: { children: ReactNode }) => {
                             borderRadius: '6px 6px 0 0', mt: 0.5,
                             '&:hover': { bgcolor: active ? '#fff' : site.blueDark },
                         };
-                        return <Box key={tab.label} component={RouterLink} to={to} sx={style}>{tab.label}</Box>;
+                        return tab.href
+                            ? <Box key={tab.label} component="a" href={tab.href} target="_blank" rel="noreferrer" sx={style}>{tab.label}</Box>
+                            : <Box key={tab.label} component={RouterLink} to={to!} sx={style}>{tab.label}</Box>;
                     })}
                     <Box flex={1} />
                     {user ? (
@@ -195,7 +198,8 @@ export const SiteLayout = ({ children }: { children: ReactNode }) => {
 
             {/* Footer */}
             <Box sx={{ borderTop: `1px solid ${site.skyDark}`, py: 2, textAlign: 'center', fontSize: 11.5, color: site.navy, fontFamily: 'Verdana, Tahoma, sans-serif' }}>
-                EduVerse — a safe virtual world for schools.
+                EduVerse — a safe virtual world for schools. Avatar art from the Liberated Pixel Cup;{' '}
+                <a href={`${process.env.PUBLIC_URL ?? ''}/avatar/lpc/CREDITS.md`} target="_blank" rel="noreferrer" style={{ color: site.navy }}>see credits</a>.
             </Box>
         </Box>
     );
