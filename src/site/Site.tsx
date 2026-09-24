@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Box, ButtonBase, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -105,6 +105,55 @@ export const BigButton = ({ children, onClick, color = site.green, dark = site.g
 );
 
 /** A screenshot with a white frame, like the pictures on the old hotel site. */
+export interface Shot {
+    src: string;
+    title: string;
+    caption: string;
+}
+
+/** A picture gallery: one big screenshot with clickable thumbnails and next/previous buttons. */
+export const Showcase = ({ shots }: { shots: Shot[] }) => {
+    const [index, setIndex] = useState(0);
+    const shot = shots[index];
+    const go = (step: number) => setIndex((index + step + shots.length) % shots.length);
+    const arrow = {
+        position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: 34, height: 34, borderRadius: '50%',
+        border: '2px solid #fff', bgcolor: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+        '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+    } as const;
+    return (
+        <Box>
+            <Box sx={{ position: 'relative' }}>
+                <Screenshot src={shot.src} alt={shot.title} />
+                <Box component="button" aria-label="Previous picture" onClick={() => go(-1)} sx={{ ...arrow, left: 10 }}>‹</Box>
+                <Box component="button" aria-label="Next picture" onClick={() => go(1)} sx={{ ...arrow, right: 10 }}>›</Box>
+            </Box>
+            <Box sx={{ mt: 1, fontFamily: 'Verdana, Tahoma, sans-serif' }}>
+                <b>{shot.title}</b>
+                <Box component="span" sx={{ color: site.muted, fontSize: 12 }}> · {index + 1} of {shots.length}</Box>
+                <Box sx={{ fontSize: 12.5, mt: 0.25 }}>{shot.caption}</Box>
+            </Box>
+            <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${shots.length}, 1fr)`, gap: 0.75, mt: 1 }}>
+                {shots.map((s, i) => (
+                    <Box
+                        key={s.src}
+                        component="button"
+                        aria-label={`Show ${s.title}`}
+                        onClick={() => setIndex(i)}
+                        sx={{
+                            p: 0, cursor: 'pointer', bgcolor: '#000', borderRadius: '3px', overflow: 'hidden',
+                            border: i === index ? `3px solid ${site.yellow}` : `3px solid #fff`,
+                            outline: `1px solid ${site.border}`, opacity: i === index ? 1 : 0.75, '&:hover': { opacity: 1 },
+                        }}
+                    >
+                        <Box component="img" src={`${process.env.PUBLIC_URL ?? ''}/screenshots/${s.src}`} alt="" sx={{ width: '100%', display: 'block', aspectRatio: '16 / 9', objectFit: 'cover' }} />
+                    </Box>
+                ))}
+            </Box>
+        </Box>
+    );
+};
+
 export const Screenshot = ({ src, alt, caption }: { src: string; alt: string; caption?: string }) => (
     <Box component="figure" sx={{ m: 0 }}>
         <Box
