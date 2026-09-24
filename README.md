@@ -36,7 +36,8 @@ It connects to the server's SignalR hub (`/hubs/world`, next to `REACT_APP_API_U
 - `src/pages/World.tsx`: the page (navigator, chat, people, host tools, action bar)
 - `src/world/useWorld.ts`: connection and room state
 - `src/world/RoomScene.ts`: PixiJS scene (floor, walls, furniture, walking, chat bubbles, emotes, build mode, camera)
-- `src/world/avatar.ts`, `src/world/pixelAvatar.ts`: Habbo-style pixel avatars drawn in code in 8 directions (5 drawn views plus mirrors), with walking, chair and floor sitting, waving, dancing and blinking
+- `src/world/avatarArt.ts`: draws the avatars as pixel art in the style of the Liberated Pixel Cup sprites (dark outlines, soft shading, hair strands, shiny eyes) in 8 directions (5 drawn views plus mirrors), with walking, chair and floor sitting, waving and raised hands
+- `src/world/avatar.ts`, `src/world/pixelAvatar.ts`: turn those frames into Pixi sprites and animate them (walking, dancing, blinking)
 - `src/world/furni.ts`, `src/world/iso.ts`: floor, walls and furniture, drawn with shapes
 - `src/world/worldClient.ts`: typed wrapper for the hub methods
 - `src/world/ui/`: character creator, shop, build panel, room settings, create-room dialog
