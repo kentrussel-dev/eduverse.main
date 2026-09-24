@@ -25,6 +25,7 @@ export const authService = {
     async login(data: LoginFormData) {
         try {
             const response = await axios.post(`${API_URL}/auth/login`, data);
+            tokenStore.set(response.data.token);
             return response.data;
         } catch (error: any) {
             if (error.response?.status === 401 && error.response?.data.includes('confirm')) {
@@ -47,6 +48,7 @@ export const authService = {
     },
 
     async logout() {
+        tokenStore.clear();
         const response = await axios.post(`${API_URL}/auth/logout`);
         return response.data;
     },
@@ -59,6 +61,7 @@ export const authService = {
     async checkAuthStatus() {
         try {
             const response = await axios.get(`${API_URL}/auth/me`, { withCredentials: true });
+            tokenStore.set(response.data.token);
             return response.data;
         } catch (error) {
             tokenStore.clear();
