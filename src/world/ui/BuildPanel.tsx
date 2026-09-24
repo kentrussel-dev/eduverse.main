@@ -1,12 +1,13 @@
-import { Box, Button, ButtonBase, IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Box, Button, ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
 import RotateRightIcon from '@mui/icons-material/RotateRight';
+import { HabboWindow } from './HabboWindow';
+import { habbo } from './habboTheme';
 import { FurniImage } from './ShopDialog';
 import { CatalogItem, Dir } from '../types';
 
 interface Props {
-    /** Docked in the side column (desktop) instead of floating over the room (phones). */
-    docked: boolean;
+    /** Only a room's owner can place furniture there. */
+    canBuild: boolean;
     inventory: Record<string, number>;
     catalog: CatalogItem[];
     placing: { type: string; dir: Dir } | null;
@@ -19,43 +20,41 @@ interface Props {
     onClose: () => void;
 }
 
-/** The room owner's inventory: pick an item, then click the floor to place it. */
+/**
+ * The Habbo-style inventory. In your own room, pick an item and click the floor to place it,
+ * or click placed furniture to rotate it or pick it up.
+ */
 export const BuildPanel = (props: Props) => {
-    const { inventory, catalog, placing, selectedName } = props;
+    const { inventory, catalog, placing, selectedName, canBuild } = props;
     const items = Object.entries(inventory).filter(([, count]) => count > 0);
     const nameOf = (type: string) => catalog.find((i) => i.id === type)?.name ?? type;
 
     return (
-        <Paper
-            square={props.docked}
-            sx={props.docked
-                ? { height: '100%', p: 1.5, overflow: 'auto' }
-                : { position: 'absolute', left: 12, right: 12, top: 72, maxHeight: '45%', overflow: 'auto', p: 1.5, bgcolor: 'rgba(20,20,35,0.95)', zIndex: 2 }}
-        >
-            <Stack direction="row" alignItems="center" mb={1}>
-                <Typography variant="subtitle2" flex={1}>🧱 Build mode: your inventory</Typography>
-                <IconButton size="small" onClick={props.onClose} aria-label="Close build mode"><CloseIcon fontSize="small" /></IconButton>
-            </Stack>
-
+        <HabboWindow title="Inventory" onClose={props.onClose} width={360} initial={{ x: 16, y: 80 }}>
             {items.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" mb={1}>
-                    Your inventory is empty. <Button size="small" onClick={props.onOpenShop}>Visit the shop</Button>
+                <Typography variant="body2" mb={1}>
+                    Your inventory is empty. <Button size="small" onClick={props.onOpenShop}>Open shop</Button>
                 </Typography>
             ) : (
-                <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(64px, 1fr))" gap={0.75} sx={{ maxHeight: props.docked ? 'none' : 150, overflow: 'auto' }}>
+                <Box
+                    display="grid"
+                    gridTemplateColumns="repeat(auto-fill, minmax(58px, 1fr))"
+                    gap={0.5}
+                    sx={{ maxHeight: 190, overflow: 'auto', p: 0.5, bgcolor: habbo.windowDark, border: '1px solid rgba(0,0,0,0.3)', borderRadius: 1 }}
+                >
                     {items.map(([type, count]) => (
                         <Tooltip key={type} title={nameOf(type)}>
                             <ButtonBase
-                                onClick={() => props.onPick(type)}
+                                onClick={() => canBuild && props.onPick(type)}
                                 aria-label={`Place ${nameOf(type)}`}
                                 sx={{
-                                    flexDirection: 'column', p: 0.5, borderRadius: 1.5, position: 'relative',
-                                    border: placing?.type === type ? '2px solid #818cf8' : '2px solid rgba(255,255,255,0.08)',
-                                    bgcolor: placing?.type === type ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.04)',
+                                    flexDirection: 'column', p: 0.5, borderRadius: 1, position: 'relative', height: 56,
+                                    bgcolor: placing?.type === type ? '#cfe3ec' : '#ececec',
+                                    border: placing?.type === type ? `2px solid ${habbo.blue}` : '1px solid rgba(0,0,0,0.3)',
                                 }}
                             >
                                 <FurniImage type={type} size={40} />
-                                <Box sx={{ position: 'absolute', top: 1, right: 4, fontSize: 11, fontWeight: 700 }}>×{count}</Box>
+                                <Box sx={{ position: 'absolute', top: 1, right: 3, fontSize: 10, fontWeight: 700 }}>{count}</Box>
                             </ButtonBase>
                         </Tooltip>
                     ))}
@@ -63,24 +62,28 @@ export const BuildPanel = (props: Props) => {
             )}
 
             <Box mt={1}>
-                {placing ? (
+                {!canBuild ? (
+                    <Typography variant="body2" color="text.secondary">
+                        You can place furniture in rooms you own. Create a room in the Navigator.
+                    </Typography>
+                ) : placing ? (
                     <Stack direction="row" spacing={1} alignItems="center">
                         <Typography variant="body2" flex={1}>Click the floor to place <b>{nameOf(placing.type)}</b>.</Typography>
-                        <Button size="small" startIcon={<RotateRightIcon />} onClick={props.onRotatePlacing}>Rotate</Button>
-                        <Button size="small" onClick={() => props.onPick(null)}>Done</Button>
+                        <Button startIcon={<RotateRightIcon />} onClick={props.onRotatePlacing}>Rotate</Button>
+                        <Button variant="contained" onClick={() => props.onPick(null)}>Done</Button>
                     </Stack>
                 ) : selectedName ? (
                     <Stack direction="row" spacing={1} alignItems="center">
                         <Typography variant="body2" flex={1}>Selected: <b>{selectedName}</b></Typography>
-                        <Button size="small" startIcon={<RotateRightIcon />} onClick={props.onRotateSelected}>Rotate</Button>
-                        <Button size="small" color="warning" onClick={props.onPickUpSelected}>Pick up</Button>
+                        <Button startIcon={<RotateRightIcon />} onClick={props.onRotateSelected}>Rotate</Button>
+                        <Button variant="contained" color="error" onClick={props.onPickUpSelected}>Pick up</Button>
                     </Stack>
                 ) : (
                     <Typography variant="body2" color="text.secondary">
-                        Pick an item to place it, or click furniture in the room to rotate or pick it up.
+                        Pick an item to place it, or click furniture in your room to rotate or pick it up.
                     </Typography>
                 )}
             </Box>
-        </Paper>
+        </HabboWindow>
     );
 };

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
-    Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, List, ListItem, ListItemText, MenuItem, Stack,
+    Box, Button, Divider, List, ListItem, ListItemText, MenuItem, Stack,
     TextField, Typography,
 } from '@mui/material';
+import { HabboWindow, WindowActions } from './HabboWindow';
 import { RoomBan, RoomKind, RoomSettings } from '../types';
 
 interface Props {
-    open: boolean;
     room: RoomSettings & { id: string };
     bans: RoomBan[];
     isTeacher: boolean;
@@ -16,25 +16,13 @@ interface Props {
     onDelete: () => void;
 }
 
-export const RoomSettingsDialog = ({ open, room, bans, isTeacher, onClose, onSave, onUnban, onDelete }: Props) => {
+export const RoomSettingsDialog = ({ room, bans, isTeacher, onClose, onSave, onUnban, onDelete }: Props) => {
     const [draft, setDraft] = useState<RoomSettings>(room);
     const [confirmDelete, setConfirmDelete] = useState(false);
 
     return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            maxWidth="xs"
-            fullWidth
-            TransitionProps={{
-                onEnter: () => {
-                    setDraft({ name: room.name, description: room.description, kind: room.kind, maxUsers: room.maxUsers });
-                    setConfirmDelete(false);
-                },
-            }}
-        >
-            <DialogTitle>Room settings</DialogTitle>
-            <DialogContent>
+        <HabboWindow title="Room settings" onClose={onClose} width={380}>
+            <Box>
                 <Stack spacing={2} mt={1}>
                     <TextField label="Room name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} inputProps={{ maxLength: 40 }} />
                     <TextField label="Description" value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} inputProps={{ maxLength: 120 }} />
@@ -81,13 +69,13 @@ export const RoomSettingsDialog = ({ open, room, bans, isTeacher, onClose, onSav
                 ) : (
                     <Button color="error" onClick={() => setConfirmDelete(true)}>Delete room</Button>
                 )}
-            </DialogContent>
-            <DialogActions>
+            </Box>
+            <WindowActions>
                 <Button onClick={onClose}>Cancel</Button>
                 <Button variant="contained" disabled={draft.name.trim().length < 3} onClick={() => onSave({ ...draft, name: draft.name.trim(), description: draft.description.trim() })}>
                     Save
                 </Button>
-            </DialogActions>
-        </Dialog>
+            </WindowActions>
+        </HabboWindow>
     );
 };

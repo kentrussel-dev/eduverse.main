@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-    Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Tab, Tabs, Typography,
+    Box, Button, Chip, Paper, Stack, Tab, Tabs, Typography,
 } from '@mui/material';
+import { HabboWindow } from './HabboWindow';
 import { avatarThumbnail, furniThumbnail } from '../thumbnails';
 import { CatalogItem, CatalogKind, Profile } from '../types';
 
@@ -36,11 +37,12 @@ const ClothingImage = ({ item, profile, size = 64 }: { item: CatalogItem; profil
 };
 
 export const Coins = ({ amount }: { amount: number }) => (
-    <Chip label={`🪙 ${amount}`} sx={{ fontWeight: 700, bgcolor: '#ffd166', color: '#3d2b00' }} />
+    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, height: 24, borderRadius: '4px', bgcolor: '#ffbf00', border: '1px solid #8a6700', color: '#000', fontWeight: 700, fontSize: 12 }}>
+        🪙 {amount}
+    </Box>
 );
 
 interface Props {
-    open: boolean;
     profile: Profile;
     catalog: CatalogItem[];
     onClose: () => void;
@@ -48,7 +50,7 @@ interface Props {
     onClaimDaily: () => Promise<void>;
 }
 
-export const ShopDialog = ({ open, profile, catalog, onClose, onBuy, onClaimDaily }: Props) => {
+export const ShopDialog = ({ profile, catalog, onClose, onBuy, onClaimDaily }: Props) => {
     const [tab, setTab] = useState<string>('Seating');
     const [busy, setBusy] = useState<string | null>(null);
 
@@ -65,14 +67,10 @@ export const ShopDialog = ({ open, profile, catalog, onClose, onBuy, onClaimDail
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                🛍️ Shop
-                <Box flex={1} />
-                <Coins amount={profile.coins} />
-            </DialogTitle>
-            <DialogContent>
-                <Paper variant="outlined" sx={{ p: 1.5, mb: 2, display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'rgba(255,209,102,0.08)' }}>
+        <HabboWindow title="Shop" onClose={onClose} width={640}>
+            <Box>
+                <Box display="flex" justifyContent="flex-end" mb={1}><Coins amount={profile.coins} /></Box>
+                <Paper variant="outlined" sx={{ p: 1.5, mb: 2, display: 'flex', alignItems: 'center', gap: 2, bgcolor: '#fff3c4', borderColor: '#c9a200' }}>
                     <Typography variant="body2" flex={1}>
                         {profile.dailyBonusAvailable
                             ? 'Your daily coins are ready!'
@@ -99,7 +97,7 @@ export const ShopDialog = ({ open, profile, catalog, onClose, onBuy, onClaimDail
                         const count = item.kind === CatalogKind.Furni ? profile.furni[item.id] ?? 0 : 0;
                         const affordable = profile.coins >= item.price;
                         return (
-                            <Paper key={item.id} variant="outlined" sx={{ p: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                            <Paper key={item.id} variant="outlined" sx={{ bgcolor: '#fff', borderColor: 'rgba(0,0,0,0.3)', p: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                                 <Box sx={{ height: 72, display: 'flex', alignItems: 'center' }}>
                                     {item.kind === CatalogKind.Furni ? <FurniImage type={item.id} size={64} /> : <ClothingImage item={item} profile={profile} size={72} />}
                                 </Box>
@@ -108,17 +106,14 @@ export const ShopDialog = ({ open, profile, catalog, onClose, onBuy, onClaimDail
                                     <Typography variant="body2">🪙 {item.price}</Typography>
                                     {count > 0 && <Chip size="small" label={`have ${count}`} />}
                                 </Stack>
-                                <Button fullWidth size="small" variant="contained" disabled={owned || !affordable || busy === item.id} onClick={() => buy(item)}>
+                                <Button fullWidth size="small" variant="contained" color="secondary" disabled={owned || !affordable || busy === item.id} onClick={() => buy(item)}>
                                     {owned ? 'Owned' : affordable ? 'Buy' : 'Not enough coins'}
                                 </Button>
                             </Paper>
                         );
                     })}
                 </Box>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose}>Close</Button>
-            </DialogActions>
-        </Dialog>
+            </Box>
+        </HabboWindow>
     );
 };

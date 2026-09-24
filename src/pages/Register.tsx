@@ -41,7 +41,7 @@ const LeftPanel = styled(motion.div)`
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(139, 92, 246, 0.2);
+    background: rgba(30, 114, 149, 0.2);
     z-index: 1;
   }
   
@@ -97,7 +97,7 @@ const StyledTextField = styled(TextField)`
     &:hover {
       background: #ffffff;
       & fieldset {
-        border-color: rgba(99, 102, 241, 0.5);
+        border-color: rgba(30, 114, 149, 0.5);
       }
     }
     
@@ -108,9 +108,9 @@ const StyledTextField = styled(TextField)`
     }
     
     &.Mui-focused fieldset {
-      border-color: #6366f1;
+      border-color: #1e7295;
       border-width: 2px;
-      background: rgba(99, 102, 241, 0.02);
+      background: rgba(30, 114, 149, 0.02);
     }
 
     & input {
@@ -134,7 +134,7 @@ const StyledTextField = styled(TextField)`
     color: #0a192f;
     
     &.Mui-focused {
-      color: #8b5cf6;
+      color: #185d79;
     }
   }
 
@@ -145,7 +145,7 @@ const StyledTextField = styled(TextField)`
 `;
 
 const GradientButton = styled(Button)`
-  background: linear-gradient(45deg, #6366f1 30%, #8b5cf6 90%);
+  background: #1e7295;
   color: white;
   padding: 1rem 2rem;
   margin-top: 1rem;
@@ -156,8 +156,8 @@ const GradientButton = styled(Button)`
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
-    background: linear-gradient(45deg, #5457ea 30%, #7c4ef0 90%);
+    box-shadow: 0 4px 20px rgba(30, 114, 149, 0.3);
+    background: #185d79;
   }
 
   &.Mui-disabled {
@@ -179,7 +179,7 @@ const GoogleButton = styled(Button)`
   
   &:hover {
     background: #f8f9fa;
-    border-color: #8b5cf6;
+    border-color: #185d79;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
@@ -198,10 +198,10 @@ const StyledCheckbox = styled(FormControlLabel)`
   margin-bottom: 1rem;
   
   & .MuiCheckbox-root {
-    color: #6366f1;
+    color: #1e7295;
     
     &.Mui-checked {
-      color: #8b5cf6;
+      color: #185d79;
     }
   }
   
@@ -334,7 +334,7 @@ export const Register = () => {
                                 width: '200px',
                                 height: 'auto',
                                 marginBottom: '2rem',
-                                filter: 'drop-shadow(0 0 20px rgba(139, 92, 246, 0.5))'
+                                filter: 'drop-shadow(0 0 20px rgba(30, 114, 149, 0.5))'
                             }}
                         />
                     </motion.div>
@@ -529,7 +529,7 @@ export const Register = () => {
                                 mt: 2,
                                 borderRadius: '4px',
                                 '& .MuiLinearProgress-bar': {
-                                    background: 'linear-gradient(45deg, #6366f1 30%, #8b5cf6 90%)'
+                                    background: '#1e7295'
                                 }
                             }} />
                         )}
@@ -561,12 +561,12 @@ export const Register = () => {
                                     component="button"
                                     onClick={() => navigate('/login')}
                                     sx={{
-                                        color: '#6366f1',
+                                        color: '#1e7295',
                                         fontWeight: 600,
                                         textDecoration: 'none',
                                         transition: 'all 0.2s ease',
                                         '&:hover': {
-                                            color: '#8b5cf6'
+                                            color: '#185d79'
                                         }
                                     }}
                                     disabled={loading}

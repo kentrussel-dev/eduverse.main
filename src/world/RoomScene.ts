@@ -65,7 +65,7 @@ export class RoomScene {
     constructor(private host: HTMLElement, private room: RoomSnapshot, private events: RoomSceneEvents) {
         this.app = new Application({
             resizeTo: host,
-            backgroundColor: 0x0d1b2a,
+            backgroundColor: 0x000000,
             antialias: true,
             resolution: window.devicePixelRatio || 1,
             autoDensity: true,
@@ -89,6 +89,8 @@ export class RoomScene {
 
         this.setupInput();
         this.centerCamera();
+        // Keep the room in view when the window is resized or a phone is rotated.
+        this.app.renderer.on('resize', this.centerCamera);
         this.app.ticker.add(this.tick);
 
         if (process.env.REACT_APP_E2E === 'true') {
@@ -103,6 +105,7 @@ export class RoomScene {
     }
 
     destroy() {
+        this.app.renderer.off('resize', this.centerCamera);
         this.app.ticker.remove(this.tick);
         this.app.destroy(true, { children: true });
     }
@@ -159,7 +162,7 @@ export class RoomScene {
     }
 
     /** Fits the whole room on screen (never zooming in past 100%) and centers it. */
-    private centerCamera() {
+    private centerCamera = () => {
         const bounds = this.world.getLocalBounds();
         const { width, height } = this.app.screen;
         // Leave room for the overlays at the top and bottom of the canvas.
@@ -169,7 +172,7 @@ export class RoomScene {
             Math.round(width / 2 - (bounds.x + bounds.width / 2) * scale),
             Math.round(height / 2 - (bounds.y + bounds.height / 2) * scale),
         );
-    }
+    };
 
     zoom(factor: number) {
         const next = Math.min(2, Math.max(0.35, this.world.scale.x * factor));
