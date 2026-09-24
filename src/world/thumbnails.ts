@@ -1,5 +1,6 @@
 import { Application, Container, DisplayObject } from 'pixi.js';
 import { drawFurni } from './furni';
+import { furniAsset, furniAssetImage } from './furniAssets';
 import { portrait } from './lpcAvatar';
 import { AvatarLook } from './types';
 
@@ -19,13 +20,23 @@ const render = async (key: string, build: () => DisplayObject) => {
 };
 
 /** Image of a furni type, as it looks placed on a tile. */
-export const furniThumbnail = (type: string) =>
-    render(`furni:${type}`, () => {
+export const furniThumbnail = (type: string): Promise<string> => {
+    if (furniAsset(type)) {
+        const key = `furni:${type}`;
+        const cached = cache.get(key);
+        if (cached) return Promise.resolve(cached);
+        return furniAssetImage(type).then((url) => {
+            cache.set(key, url);
+            return url;
+        });
+    }
+    return render(`furni:${type}`, () => {
         const container = new Container();
         container.sortableChildren = true;
         container.addChild(...drawFurni({ id: 'thumb', type, x: 0, y: 0, dir: type === 'tv' || type === 'arcade' ? 'sw' : 'se' }));
         return container;
     });
+};
 
 /** Front view of an avatar wearing a look (crisp pixel art, cropped to the character). */
 export const avatarThumbnail = (look: AvatarLook) => {

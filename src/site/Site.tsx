@@ -123,9 +123,8 @@ export const Screenshot = ({ src, alt, caption }: { src: string; alt: string; ca
 
 const tabs = [
     { label: 'Home', to: '/' },
-    { label: 'Hotel', to: '/world' },
-    { label: 'Safety', to: '/#safety', wideOnly: true },
-    { label: 'Credits', href: `${process.env.PUBLIC_URL ?? ''}/avatar/lpc/CREDITS.md`, wideOnly: true },
+    { label: 'Safety', to: '/safety' },
+    { label: 'Credits', to: '/credits' },
 ];
 
 /** Page frame: sky, logo header, tab bar, content, footer. */
@@ -163,17 +162,14 @@ export const SiteLayout = ({ children }: { children: ReactNode }) => {
                 <Box sx={{ maxWidth: 980, mx: 'auto', px: 2, display: 'flex', alignItems: 'stretch', gap: 0.5, overflowX: 'auto' }}>
                     {tabs.map((tab) => {
                         const to = tab.to === '/' ? homeTo : tab.to;
-                        const active = to !== undefined && location.pathname === to.split('#')[0] && !to.includes('#');
+                        const active = location.pathname === to;
                         const style = {
                             px: 1.75, py: 1, fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', textDecoration: 'none',
-                            display: tab.wideOnly ? { xs: 'none', sm: 'block' } : 'block',
                             color: active ? site.navy : '#fff', bgcolor: active ? '#fff' : 'transparent',
                             borderRadius: '6px 6px 0 0', mt: 0.5,
                             '&:hover': { bgcolor: active ? '#fff' : site.blueDark },
                         };
-                        return tab.href
-                            ? <Box key={tab.label} component="a" href={tab.href} target="_blank" rel="noreferrer" sx={style}>{tab.label}</Box>
-                            : <Box key={tab.label} component={RouterLink} to={to!} sx={style}>{tab.label}</Box>;
+                        return <Box key={tab.label} component={RouterLink} to={to} sx={style}>{tab.label}</Box>;
                     })}
                     <Box flex={1} />
                     {user ? (
@@ -198,8 +194,8 @@ export const SiteLayout = ({ children }: { children: ReactNode }) => {
 
             {/* Footer */}
             <Box sx={{ borderTop: `1px solid ${site.skyDark}`, py: 2, textAlign: 'center', fontSize: 11.5, color: site.navy, fontFamily: 'Verdana, Tahoma, sans-serif' }}>
-                EduVerse — a safe virtual world for schools. Avatar art from the Liberated Pixel Cup;{' '}
-                <a href={`${process.env.PUBLIC_URL ?? ''}/avatar/lpc/CREDITS.md`} target="_blank" rel="noreferrer" style={{ color: site.navy }}>see credits</a>.
+                EduVerse — a safe virtual campus for schools. Art from the Liberated Pixel Cup, Kenney and KayKit;{' '}
+                <RouterLink to="/credits" style={{ color: site.navy }}>see credits</RouterLink>.
             </Box>
         </Box>
     );

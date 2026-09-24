@@ -39,6 +39,7 @@ It connects to the server's SignalR hub (`/hubs/world`, next to `REACT_APP_API_U
 - `src/world/avatar.ts`, `src/world/lpcAvatar.ts`: pixel-art avatars built from LPC sprite sheets in `public/avatar/lpc` (4 directions, walk, sit and idle), recolored to each player's colors
 - `src/world/directions.ts`: which way avatars face. Walking in 8 directions picks one of the 4 sprite rows: anything heading right (even diagonally) faces right, anything heading left faces left, and only straight up or down shows the back or front
 - `src/world/furni.ts`, `src/world/iso.ts`: floor, walls and furniture, drawn with shapes
+- `src/world/furniAssets.ts`, `public/furni/`: 207 pieces of furniture rendered from the CC0 Kenney Furniture Kit and KayKit Furniture/Restaurant Bits 3D models, one strip of 4 isometric directions per piece (`manifest.json` says where each frame's tile center is)
 - `src/world/worldClient.ts`: typed wrapper for the hub methods
 - `src/world/ui/`: character creator, shop, build panel, room settings, create-room dialog
 - `src/world/thumbnails.ts`: renders furniture and avatar pictures for the shop and menus
@@ -54,7 +55,7 @@ How to play:
 
 ### Site pages
 
-The public pages (`/`, `/login`, `/register`, `/dashboard`) use the classic Habbo-style layout in `src/site/Site.tsx`.
+The public pages (`/`, `/login`, `/register`, `/dashboard`, `/safety`, `/credits`) use the classic Habbo-style layout in `src/site/Site.tsx`.
 Screenshots of the world live in `public/screenshots`.
 
 ### Art credits

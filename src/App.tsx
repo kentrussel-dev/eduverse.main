@@ -8,6 +8,8 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Dashboard } from './pages/Dashboard';
 import { World } from './pages/World';
 import { LandingPage } from './pages/LandingPage';
+import { Safety } from './pages/Safety';
+import { Credits } from './pages/Credits';
 import { Box } from '@mui/material';
 import { theme } from './theme/theme';
 import './App.css';
@@ -30,6 +32,8 @@ const AppContent = () => {
               <World />
             </ProtectedRoute>
           } />
+          <Route path="/safety" element={<Safety />} />
+          <Route path="/credits" element={<Credits />} />
           <Route path="/" element={<LandingPage />} />
         </Routes>
       </Box>

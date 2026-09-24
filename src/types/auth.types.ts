@@ -12,6 +12,7 @@ export interface User {
     accountType: AccountType;
     authProvider: string;
     token?: string;
+    gender?: 'boy' | 'girl' | null;
 }
 
 export interface LoginFormData {
@@ -24,4 +25,5 @@ export interface RegisterFormData {
     password: string;
     fullName: string;
     isTeacher: boolean;
+    gender: 'boy' | 'girl';
 }

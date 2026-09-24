@@ -1,4 +1,5 @@
 import { Container, Graphics, Text } from 'pixi.js';
+import { furniAsset, furniSprite } from './furniAssets';
 import { flat, poly, prism, project } from './iso';
 import { FurniItem } from './types';
 
@@ -6,6 +7,12 @@ const WOOD = 0xb07a45;
 const DARK_WOOD = 0x7a4b28;
 const LIGHT_WOOD = 0xd4a373;
 const METAL = 0x8a94a6;
+
+/** Flat pieces other furniture can stand on. */
+export const isRug = (type: string) => type === 'rug' || furniAsset(type)?.walk === true;
+
+/** Pieces people sit on. */
+export const isSeat = (type: string) => ['chair', 'sofa', 'stool', 'beanbag'].includes(type) || furniAsset(type)?.seat === true;
 
 /** Depth used to sort a piece drawn on tile (x, y); larger is drawn in front. */
 export const depthOf = (x: number, y: number, offset = 0) => Math.round((x + y) * 100 + offset);
@@ -58,6 +65,12 @@ const chair = (item: FurniItem, color: number, seatHeight: number, backHeight: n
 /** Builds the display objects for one piece of furniture (already depth-sorted via zIndex). */
 export const drawFurni = (item: FurniItem): Container[] => {
     const { x, y } = item;
+    const sprite = furniSprite(item);
+    if (sprite) {
+        // Rugs lie under everything; other pieces sort with people by their tile.
+        sprite.zIndex = furniAsset(item.type)?.walk ? depthOf(x, y, -90) : depthOf(x, y, 20);
+        return [sprite];
+    }
     const g = new Graphics();
     g.zIndex = depthOf(x, y, 20);
 

@@ -155,7 +155,7 @@ export const composeSheet = (look: AvatarLook, anim: Anim) => {
                 const img = await loadImage(`${BASE}/${part}/${anim}.png`);
                 const info = manifest.parts[part];
                 if (!info.ramp || !info.recolor) return img;
-                const color = part === 'bottom/skirt' && look.top === 'dress' ? look.shirt : look[info.recolor];
+                const color = part === 'bottom/skirt' && look.top === 'dress' ? look.shirt : String(look[info.recolor]);
                 return recolor(img, info.ramp, color);
             }));
             const canvas = document.createElement('canvas');

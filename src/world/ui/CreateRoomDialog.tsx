@@ -12,6 +12,8 @@ interface Props {
 }
 
 const templates: { value: CreateRoomRequest['template']; label: string }[] = [
+    { value: 'apartment', label: 'Apartment (furnished: kitchen, living room, bedroom, bathroom)' },
+    { value: 'house', label: 'House (big and furnished, with a games room)' },
     { value: 'classroom', label: 'Classroom (desks + whiteboard)' },
     { value: 'study_hall', label: 'Study hall (tables + bookshelves)' },
     { value: 'lounge', label: 'Lounge (sofas + plants)' },
@@ -22,7 +24,7 @@ export const CreateRoomDialog = ({ isTeacher, onClose, onCreate }: Props) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [kind, setKind] = useState<RoomKind>(isTeacher ? RoomKind.Classroom : RoomKind.Study);
-    const [template, setTemplate] = useState<CreateRoomRequest['template']>(isTeacher ? 'classroom' : 'study_hall');
+    const [template, setTemplate] = useState<CreateRoomRequest['template']>(isTeacher ? 'classroom' : 'apartment');
     const [busy, setBusy] = useState(false);
 
     const submit = async () => {

@@ -6,7 +6,7 @@ interface AuthContextType {
     user: User | null;
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string, fullName: string, isTeacher: boolean) => Promise<void>;
+    register: (email: string, password: string, fullName: string, isTeacher: boolean, gender: 'boy' | 'girl') => Promise<void>;
     logout: () => Promise<void>;
     googleLogin: () => Promise<void>;
 }
@@ -46,9 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userData);
     };
 
-    const register = async (email: string, password: string, fullName: string, isTeacher: boolean) => {
-        // Registering doesn't sign you in: the email must be confirmed first, then you log in.
-        await authService.register({ email, password, fullName, isTeacher });
+    const register = async (email: string, password: string, fullName: string, isTeacher: boolean, gender: 'boy' | 'girl') => {
+        // Registering signs you in right away.
+        const userData = await authService.register({ email, password, fullName, isTeacher, gender });
+        setUser(userData);
     };
 
     const logout = async () => {

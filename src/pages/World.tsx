@@ -32,6 +32,7 @@ import { HabboWindow } from '../world/ui/HabboWindow';
 import { habbo, habboTheme } from '../world/ui/habboTheme';
 import { RoomSettingsDialog } from '../world/ui/RoomSettingsDialog';
 import { Coins, ShopDialog } from '../world/ui/ShopDialog';
+import { loadFurniAssets } from '../world/furniAssets';
 import {
     AvatarLook, CatalogItem, DANCES, Dir, EMOTES, Occupant, RoomKind, roomKindLabel, RoomSummary,
 } from '../world/types';
@@ -101,7 +102,9 @@ const WorldClient = () => {
     const canvasHost = useRef<HTMLDivElement>(null);
     const chatInput = useRef<HTMLInputElement>(null);
 
-    const [windows, setWindows] = useState<Set<WindowName>>(new Set());
+    // The dashboard's "Change clothes" link opens the character editor (/world?open=character).
+    const [windows, setWindows] = useState<Set<WindowName>>(() =>
+        new URLSearchParams(window.location.search).get('open') === 'character' ? new Set<WindowName>(['character']) : new Set());
     const [message, setMessage] = useState('');
     const [roomCode, setRoomCode] = useState('');
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -143,9 +146,15 @@ const WorldClient = () => {
     const placingRef = useRef(placing);
     placingRef.current = placing;
 
+    // The furniture list must be loaded before a room is drawn.
+    const [furniReady, setFurniReady] = useState(false);
+    useEffect(() => {
+        loadFurniAssets().then(() => setFurniReady(true));
+    }, []);
+
     // Build a fresh PixiJS scene whenever we enter a room.
     useEffect(() => {
-        if (!room || !canvasHost.current) return undefined;
+        if (!room || !canvasHost.current || !furniReady) return undefined;
         setPlacing(null);
         setSelectedFurni(null);
         setSelectedId(null);
@@ -172,7 +181,7 @@ const WorldClient = () => {
         };
         // Only rebuild on room change; live updates go straight to the scene.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [room?.id, room?.youId]);
+    }, [room?.id, room?.youId, furniReady]);
 
     // Keep the scene's build mode in sync with the inventory window.
     useEffect(() => {
@@ -572,7 +581,7 @@ const WorldClient = () => {
                 <Box sx={{ width: 240, height: 14, border: '2px solid #fff', borderRadius: '4px', p: '2px' }}>
                     <Box sx={{ width: '70%', height: '100%', bgcolor: '#fff', borderRadius: '2px' }} />
                 </Box>
-                <Typography fontSize={12} color="rgba(255,255,255,0.7)">Checking in to the hotel…</Typography>
+                <Typography fontSize={12} color="rgba(255,255,255,0.7)">Arriving on campus…</Typography>
             </Box>
         );
     }
@@ -581,13 +590,13 @@ const WorldClient = () => {
         <Box sx={{ position: 'fixed', inset: 0, bgcolor: '#000', overflow: 'hidden', fontFamily: habboTheme.typography.fontFamily }}>
             <Box ref={canvasHost} sx={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: bottomSpace, touchAction: 'none' }} />
 
-            {/* Hotel view when not in a room */}
+            {/* Campus view when not in a room */}
             {!room && (
                 <Box sx={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: bottomSpace, bgcolor: '#6aa6c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Box sx={{ bgcolor: habbo.window, border: `1px solid ${habbo.border}`, borderRadius: '8px', overflow: 'hidden', width: 320 }}>
                         <Box sx={{ bgcolor: habbo.blue, color: '#fff', fontWeight: 700, textAlign: 'center', py: 0.75 }}>EduVerse</Box>
                         <Stack spacing={1.5} p={2} alignItems="center">
-                            <Typography>{status === 'disconnected' ? 'You were disconnected from the hotel.' : 'You are not in a room.'}</Typography>
+                            <Typography>{status === 'disconnected' ? 'You were disconnected from the campus.' : 'You are not in a room.'}</Typography>
                             {status === 'disconnected' ? (
                                 <Stack direction="row" spacing={1}>
                                     <Button variant="contained" onClick={() => window.location.reload()}>Reconnect</Button>

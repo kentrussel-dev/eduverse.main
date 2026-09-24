@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { BigButton, Columns, Screenshot, SiteBox, SiteLayout, site } from '../site/Site';
 import { LoginForm } from '../site/LoginForm';
 
@@ -13,6 +14,9 @@ const Feature = ({ title, color, src, alt, children }: { title: string; color: s
 /** The front page, laid out like the classic Habbo Hotel front page. */
 export const LandingPage = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    // Signed-in visitors go straight to their home page.
+    if (user) return <Navigate to="/dashboard" replace />;
 
     return (
         <SiteLayout>
@@ -29,7 +33,7 @@ export const LandingPage = () => {
                             </Box>
                         </SiteBox>
                         <SiteBox title="Safe for students" color={site.orange}>
-                            <Box id="safety" component="ul" sx={{ m: 0, pl: 2.25 }}>
+                            <Box component="ul" sx={{ m: 0, pl: 2.25 }}>
                                 <li>Bad words are hidden automatically.</li>
                                 <li>Links, emails and phone numbers are blocked in chat.</li>
                                 <li>No private messages between strangers.</li>
@@ -60,7 +64,7 @@ export const LandingPage = () => {
                                 Pick hair, clothes, colors and hats. Save up coins for special items.
                             </Feature>
                             <Feature title="Shop with coins" color={site.red} src="shop.png" alt="The furniture shop">
-                                Collect free coins every day and spend them on sofas, aquariums, arcade machines and more.
+                                Start with 1000 coins and 100 pieces of furniture, then collect free coins every day for more.
                             </Feature>
                         </Box>
                         <SiteBox title="For teachers" color={site.navy} sx={{ mt: 2 }}>

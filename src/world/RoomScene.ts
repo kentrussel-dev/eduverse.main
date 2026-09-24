@@ -1,7 +1,7 @@
 import { Application, Container, FederatedPointerEvent, Graphics, Text } from 'pixi.js';
 import { AvatarSprite } from './avatar';
 import { Dir8, dirForFacing, dirForStep } from './directions';
-import { depthOf, drawFurni, drawWhiteboard } from './furni';
+import { depthOf, drawFurni, drawWhiteboard, isRug, isSeat } from './furni';
 import { flat, poly, project, screenToTile, shade, tileCenter } from './iso';
 import { ChatMessage, Dir, FurniItem, Occupant, RoomSnapshot } from './types';
 
@@ -43,7 +43,6 @@ export interface BuildMode {
     selectedId: string | null;
 }
 
-const SEAT_TYPES = ['chair', 'sofa', 'stool', 'beanbag'];
 
 /** Draws a room with PixiJS and animates everyone in it. React owns the UI around it. */
 export class RoomScene {
@@ -301,7 +300,7 @@ export class RoomScene {
     private rebuildSeats() {
         this.seats.clear();
         for (const { item } of this.furni.values()) {
-            if (SEAT_TYPES.includes(item.type)) {
+            if (isSeat(item.type)) {
                 this.seats.set(`${item.x},${item.y}`, item);
             }
         }
@@ -313,14 +312,14 @@ export class RoomScene {
     private furniAt(x: number, y: number) {
         const here = [...this.furni.values()].map((f) => f.item).filter((f) => f.x === x && f.y === y && f.type !== 'whiteboard');
         // Prefer the item on top of a rug.
-        return here.find((f) => f.type !== 'rug') ?? here[0];
+        return here.find((f) => !isRug(f.type)) ?? here[0];
     }
 
     /** Client-side check that mirrors the server's placement rules, for the ghost's color. */
     private canPlace(type: string, x: number, y: number) {
         if (!this.isFloor(x, y) || (x === this.room.doorX && y === this.room.doorY)) return false;
         const here = [...this.furni.values()].map((f) => f.item).filter((f) => f.x === x && f.y === y);
-        return type === 'rug' ? !here.some((f) => f.type === 'rug') : !here.some((f) => f.type !== 'rug');
+        return !here.some((f) => isRug(f.type) === isRug(type));
     }
 
     /** Turns build mode on (owner only) or off (null). */

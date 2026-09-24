@@ -24,6 +24,33 @@ const styles: Record<'hairStyle' | 'top' | 'bottom' | 'hat', { value: string; la
     ],
 };
 
+type Gender = 'boy' | 'girl';
+
+/** Which styles each gender's wardrobe shows. */
+const wardrobe: Record<Gender, Record<Section, string[]>> = {
+    boy: {
+        hairStyle: ['short', 'spiky', 'curly', 'bald'],
+        top: ['tshirt', 'longsleeve', 'uniform', 'hoodie', 'jersey'],
+        bottom: ['pants', 'shorts'],
+        hat: ['none', 'cap', 'beanie', 'party', 'headphones', 'gradcap', 'crown'],
+    },
+    girl: {
+        hairStyle: ['long', 'bun', 'pigtails', 'curly', 'short'],
+        top: ['tshirt', 'longsleeve', 'uniform', 'hoodie', 'dress', 'jersey'],
+        bottom: ['skirt', 'pants', 'shorts'],
+        hat: ['none', 'bow', 'cap', 'beanie', 'party', 'headphones', 'crown'],
+    },
+};
+
+/** Switches a look to a gender, swapping any style that gender's wardrobe doesn't have. */
+const withGender = (look: AvatarLook, gender: Gender): AvatarLook => {
+    const next: AvatarLook = { ...look, gender };
+    (Object.keys(wardrobe[gender]) as Section[]).forEach((key) => {
+        if (!wardrobe[gender][key].includes(next[key])) next[key] = wardrobe[gender][key][0];
+    });
+    return next;
+};
+
 const palettes = {
     skin: ['#ffdbac', '#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#5c3a1e'],
     hair: ['#1b1b1b', '#4a3021', '#8b5a2b', '#d4a017', '#f4d06f', '#b22222', '#ff8fab', '#6a4c93', '#2a9d8f', '#e5e5e5'],
@@ -68,7 +95,8 @@ interface Props {
 }
 
 export const AvatarEditor = ({ profile, catalog, onClose, onSave, onOpenShop }: Props) => {
-    const [draft, setDraft] = useState<AvatarLook>(profile.look);
+    const [draft, setDraft] = useState<AvatarLook>({ ...profile.look, gender: profile.look.gender ?? 'boy' });
+    const gender: Gender = draft.gender ?? 'boy';
     const [section, setSection] = useState<Section>('hairStyle');
 
     const slotName = (key: Section) => (key === 'hairStyle' ? 'hairStyle' : key);
@@ -87,13 +115,25 @@ export const AvatarEditor = ({ profile, catalog, onClose, onSave, onOpenShop }: 
                 <Box sx={{ minWidth: 140, display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: habbo.windowDark, border: `1px solid ${habbo.border}`, borderRadius: 1.5, p: 2 }}>
                     <Thumb look={draft} size={170} />
                     <Typography variant="subtitle2" mt={1}>{profile.name}</Typography>
+                    <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
+                        {(['boy', 'girl'] as Gender[]).map((g) => (
+                            <Button
+                                key={g}
+                                size="small"
+                                variant={gender === g ? 'contained' : 'outlined'}
+                                onClick={() => setDraft(withGender(draft, g))}
+                            >
+                                {g === 'boy' ? 'Boy' : 'Girl'}
+                            </Button>
+                        ))}
+                    </Box>
                 </Box>
                 <Box flex={1} minWidth={0}>
                     <Tabs value={section} onChange={(_, v) => setSection(v)} variant="scrollable" sx={{ mb: 1 }}>
                         {sections.map((s) => <Tab key={s.key} value={s.key} label={s.label} />)}
                     </Tabs>
                     <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(72px, 1fr))" gap={1}>
-                        {styles[section].map((option) => {
+                        {styles[section].filter((option) => wardrobe[gender][section].includes(option.value)).map((option) => {
                             const isLocked = locked(section, option.value);
                             const selected = draft[section] === option.value;
                             const price = shopItem(section, option.value)?.price;
