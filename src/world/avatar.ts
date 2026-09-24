@@ -1,11 +1,11 @@
 import { Container, Rectangle, Sprite, Text, Texture } from 'pixi.js';
-import { avatarFrame, Dir8, FEET_Y, FRAME_H, FRAME_W, Pose, PoseKind } from './pixelAvatar';
+import { avatarFrame, Dir8, FEET_Y, FLOOR_DROP, FRAME_H, HEAD_TOP, Pose, PoseKind, SIT_DROP } from './pixelAvatar';
 import { Occupant } from './types';
 
 const WALK_FPS = 9;
 
 /**
- * A Habbo-style pixel avatar (see pixelAvatar.ts) in 8 directions. The origin is at the feet,
+ * A pixel-art avatar (see avatarArt.ts) in 8 directions. The origin is at the feet,
  * so it can be placed on a tile center.
  */
 export class AvatarSprite extends Container {
@@ -39,7 +39,7 @@ export class AvatarSprite extends Container {
 
         this.eventMode = 'static';
         this.cursor = 'pointer';
-        this.hitArea = new Rectangle(-FRAME_W / 2, -58, FRAME_W, 62);
+        this.hitArea = new Rectangle(-14, -HEAD_TOP - 2, 28, HEAD_TOP + 4);
         this.applyPose();
     }
 
@@ -122,8 +122,8 @@ export class AvatarSprite extends Container {
         const flap = this.waveLeft > 0 && !this.occupant.handRaised ? Math.round(Math.sin(t * 16)) : 0;
         this.body.position.set(flap, -bob);
 
-        const drop = kind === 'sit' ? 7 : kind === 'floor' ? 13 : 0;
-        const headTop = -52 + drop - bob;
+        const drop = kind === 'sit' ? SIT_DROP : kind === 'floor' ? FLOOR_DROP : 0;
+        const headTop = -HEAD_TOP + drop - bob;
         this.label.text = this.occupant.name + (this.occupant.muted ? ' 🔇' : '');
         this.label.position.set(0, headTop - 6);
         this.hand.visible = this.occupant.handRaised;
