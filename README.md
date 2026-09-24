@@ -36,8 +36,8 @@ It connects to the server's SignalR hub (`/hubs/world`, next to `REACT_APP_API_U
 - `src/pages/World.tsx`: the page (navigator, chat, people, host tools, action bar)
 - `src/world/useWorld.ts`: connection and room state
 - `src/world/RoomScene.ts`: PixiJS scene (floor, walls, furniture, walking, chat bubbles, emotes, build mode, camera)
-- `src/world/avatarArt.ts`: draws the avatars as pixel art in the style of the Liberated Pixel Cup sprites (dark outlines, soft shading, hair strands, shiny eyes) in 8 directions (5 drawn views plus mirrors), with walking, chair and floor sitting, waving and raised hands
-- `src/world/avatar.ts`, `src/world/pixelAvatar.ts`: turn those frames into Pixi sprites and animate them (walking, dancing, blinking)
+- `src/world/avatar.ts`, `src/world/lpcAvatar.ts`: pixel-art avatars built from LPC sprite sheets in `public/avatar/lpc` (4 directions, walk, sit and idle), recolored to each player's colors
+- `src/world/directions.ts`: which way avatars face. Walking in 8 directions picks one of the 4 sprite rows: anything heading right (even diagonally) faces right, anything heading left faces left, and only straight up or down shows the back or front
 - `src/world/furni.ts`, `src/world/iso.ts`: floor, walls and furniture, drawn with shapes
 - `src/world/worldClient.ts`: typed wrapper for the hub methods
 - `src/world/ui/`: character creator, shop, build panel, room settings, create-room dialog
@@ -57,7 +57,13 @@ How to play:
 The public pages (`/`, `/login`, `/register`, `/dashboard`) use the classic Habbo-style layout in `src/site/Site.tsx`.
 Screenshots of the world live in `public/screenshots`.
 
-Browser tests can build with `REACT_APP_E2E=true` to expose `window.eduverseScene` (for clicking exact tiles) and `window.eduverseAvatar.contactSheet` (every direction and pose of a look).
+### Art credits
+
+Avatar sprites come from the [Liberated Pixel Cup](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator)
+(CC-BY-SA 3.0 / GPL 3.0 / OGA-BY 3.0). The artists are listed in `public/avatar/lpc/CREDITS.md`, which the site links to.
+Keep that file with the sprites, and share any edited sprites under the same licenses.
+
+Browser tests can build with `REACT_APP_E2E=true` to expose `window.eduverseScene` for clicking exact tiles.
 
 ## Features
 

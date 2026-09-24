@@ -1,6 +1,6 @@
 import { Application, Container, DisplayObject } from 'pixi.js';
 import { drawFurni } from './furni';
-import { portrait } from './pixelAvatar';
+import { portrait } from './lpcAvatar';
 import { AvatarLook } from './types';
 
 // One hidden renderer draws every furni thumbnail; results are cached as data URLs.
@@ -32,7 +32,8 @@ export const avatarThumbnail = (look: AvatarLook) => {
     const key = `avatar:${JSON.stringify(look)}`;
     const cached = cache.get(key);
     if (cached) return Promise.resolve(cached);
-    const url = portrait(look, 3);
-    cache.set(key, url);
-    return Promise.resolve(url);
+    return portrait(look, 3).then((url) => {
+        cache.set(key, url);
+        return url;
+    });
 };

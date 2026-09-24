@@ -1,6 +1,6 @@
 import { Application, Container, FederatedPointerEvent, Graphics, Text } from 'pixi.js';
 import { AvatarSprite } from './avatar';
-import { Dir8, dirForFacing, dirForStep } from './pixelAvatar';
+import { Dir8, dirForFacing, dirForStep } from './directions';
 import { depthOf, drawFurni, drawWhiteboard } from './furni';
 import { flat, poly, project, screenToTile, shade, tileCenter } from './iso';
 import { ChatMessage, Dir, FurniItem, Occupant, RoomSnapshot } from './types';
