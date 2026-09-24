@@ -47,8 +47,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const register = async (email: string, password: string, fullName: string, isTeacher: boolean) => {
-        const userData = await authService.register({ email, password, fullName, isTeacher });
-        setUser(userData);
+        // Registering doesn't sign you in: the email must be confirmed first, then you log in.
+        await authService.register({ email, password, fullName, isTeacher });
     };
 
     const logout = async () => {

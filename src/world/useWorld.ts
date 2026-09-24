@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RoomScene } from './RoomScene';
-import { tokenStore } from '../services/auth.service';
+import { authService, tokenStore } from '../services/auth.service';
 import { hubErrorMessage, WorldClient } from './worldClient';
 import { CatalogItem, ChatMessage, FurniItem, Occupant, Profile, RoomBan, RoomKind, RoomSnapshot, RoomSummary } from './types';
 
@@ -152,7 +152,16 @@ export const useWorld = () => {
 
         (async () => {
             try {
-                await client.start();
+                try {
+                    await client.start();
+                } catch (error) {
+                    if (disposed || !String(error).includes('401')) throw error;
+                    // The saved token was rejected or missing. Ask the API for a fresh one
+                    // (works while the site session is still valid), then try once more.
+                    const fresh = await authService.checkAuthStatus();
+                    if (disposed || !fresh?.token) throw error;
+                    await client.start();
+                }
                 if (disposed) return;
                 setStatus('connected');
                 setProfile(await client.getProfile());
@@ -168,8 +177,9 @@ export const useWorld = () => {
                 if (disposed) return;
                 // The saved sign-in token was rejected (expired, or the server's key changed): sign in again.
                 if (String(error).includes('401')) {
+                    console.warn('The world server rejected the sign-in token. The server window logs the reason.', error);
                     tokenStore.clear();
-                    window.location.assign(`/login?error=${encodeURIComponent('Your session expired. Please sign in again.')}`);
+                    window.location.assign(`/login?error=${encodeURIComponent('Please sign in again to enter the world.')}`);
                     return;
                 }
                 setStatus('disconnected');
