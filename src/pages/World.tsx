@@ -11,6 +11,7 @@ import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import ExploreIcon from '@mui/icons-material/Explore';
 import HomeIcon from '@mui/icons-material/Home';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
+import LogoutIcon from '@mui/icons-material/Logout';
 import PeopleIcon from '@mui/icons-material/People';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SchoolIcon from '@mui/icons-material/School';
@@ -19,6 +20,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { RoomScene } from '../world/RoomScene';
 import { avatarThumbnail } from '../world/thumbnails';
 import { useWorld } from '../world/useWorld';
@@ -91,6 +94,8 @@ const StandButton = ({ children, onClick, danger }: { children: ReactNode; onCli
 
 const WorldClient = () => {
     const world = useWorld();
+    const { logout } = useAuth();
+    const navigate = useNavigate();
     const { room, occupants, profile, status, run, sceneRef, catalog } = world;
     const phone = useMediaQuery('(max-width:600px)');
     const canvasHost = useRef<HTMLDivElement>(null);
@@ -237,6 +242,15 @@ const WorldClient = () => {
             navigator.clipboard?.writeText(room.id);
             world.setNotice({ text: `Room code ${room.id} copied.`, severity: 'info' });
         }
+    };
+
+    const signOut = async () => {
+        try {
+            await logout();
+        } catch {
+            // Signing out locally is enough even if the server call fails.
+        }
+        navigate('/login');
     };
 
     const roleOf = (p: Occupant) => (p.isHost ? (p.id === room?.youId && isOwner ? 'Room owner' : 'Host') : p.isTeacher ? 'Teacher' : 'Student');
@@ -575,7 +589,10 @@ const WorldClient = () => {
                         <Stack spacing={1.5} p={2} alignItems="center">
                             <Typography>{status === 'disconnected' ? 'You were disconnected from the hotel.' : 'You are not in a room.'}</Typography>
                             {status === 'disconnected' ? (
-                                <Button variant="contained" onClick={() => window.location.reload()}>Reconnect</Button>
+                                <Stack direction="row" spacing={1}>
+                                    <Button variant="contained" onClick={() => window.location.reload()}>Reconnect</Button>
+                                    <Button onClick={signOut}>Sign out</Button>
+                                </Stack>
                             ) : (
                                 <Stack direction="row" spacing={1}>
                                     <Button variant="contained" color="secondary" onClick={() => join('lobby')}>Go to Main Hall</Button>
@@ -731,6 +748,7 @@ const WorldClient = () => {
                         <Coins amount={profile.coins} />
                     </ButtonBase>
                 )}
+                <ToolbarButton label="Sign out" onClick={signOut}><LogoutIcon sx={{ color: '#ff8a80' }} /></ToolbarButton>
             </Box>
 
             <Menu anchorEl={danceAnchor} open={Boolean(danceAnchor)} onClose={() => setDanceAnchor(null)}>
