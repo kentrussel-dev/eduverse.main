@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RoomScene } from './RoomScene';
+import { tokenStore } from '../services/auth.service';
 import { hubErrorMessage, WorldClient } from './worldClient';
 import { CatalogItem, ChatMessage, FurniItem, Occupant, Profile, RoomBan, RoomKind, RoomSnapshot, RoomSummary } from './types';
 
@@ -164,10 +165,15 @@ export const useWorld = () => {
                 setQuietMode(snapshot.quietMode);
                 setRooms(await client.getRooms(listRef.current.tab, listRef.current.query));
             } catch (error) {
-                if (!disposed) {
-                    setStatus('disconnected');
-                    showError(error);
+                if (disposed) return;
+                // The saved sign-in token was rejected (expired, or the server's key changed): sign in again.
+                if (String(error).includes('401')) {
+                    tokenStore.clear();
+                    window.location.assign(`/login?error=${encodeURIComponent('Your session expired. Please sign in again.')}`);
+                    return;
                 }
+                setStatus('disconnected');
+                showError(error);
             }
         })();
 
