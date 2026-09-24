@@ -6,6 +6,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Dashboard } from './pages/Dashboard';
+import { World } from './pages/World';
 import { LandingPage } from './pages/LandingPage';
 import { Navbar } from './components/Navbar';
 import { Box } from '@mui/material';
@@ -26,6 +27,11 @@ const AppContent = () => {
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/world" element={
+            <ProtectedRoute>
+              <World />
             </ProtectedRoute>
           } />
           <Route path="/" element={<LandingPage />} />

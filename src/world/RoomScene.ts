@@ -29,7 +29,19 @@ interface Bubble {
 export interface RoomSceneEvents {
     onTileClick: (x: number, y: number) => void;
     onAvatarClick: (occupantId: string) => void;
+    /** Build mode: place the selected inventory item on a tile. */
+    onPlaceFurni?: (x: number, y: number) => void;
+    /** Build mode: a placed furni was clicked. */
+    onFurniClick?: (furniId: string) => void;
 }
+
+/** What the owner is doing in build mode: placing an item from the inventory, or just selecting. */
+export interface BuildMode {
+    placing: { type: string; dir: Dir } | null;
+    selectedId: string | null;
+}
+
+const SEAT_TYPES = ['chair', 'sofa', 'stool', 'beanbag'];
 
 /** Draws a room with PixiJS and animates everyone in it. React owns the UI around it. */
 export class RoomScene {
@@ -42,6 +54,10 @@ export class RoomScene {
     private bubbleList: Bubble[] = [];
     private floor = new Set<string>();
     private seats = new Map<string, FurniItem>();
+    private furni = new Map<string, { item: FurniItem; views: Container[] }>();
+    private ghost = new Container();
+    private build: BuildMode | null = null;
+    private hoverTile: { x: number; y: number } | null = null;
     private setWhiteboardText: ((text: string) => void) | null = null;
     private dragStart: { x: number; y: number; worldX: number; worldY: number } | null = null;
     private dragged = false;
@@ -57,20 +73,13 @@ export class RoomScene {
         host.appendChild(this.app.view as HTMLCanvasElement);
 
         this.entities.sortableChildren = true;
+        this.ghost.alpha = 0.55;
         this.world.addChild(this.buildRoomShell(), this.hover, this.entities, this.bubbles);
+        this.entities.addChild(this.ghost);
         this.app.stage.addChild(this.world);
 
         for (const item of room.furni) {
-            if (item.type === 'whiteboard') {
-                const { board, setText } = drawWhiteboard(item);
-                this.world.addChildAt(board, 1);
-                this.setWhiteboardText = setText;
-            } else {
-                this.entities.addChild(...drawFurni(item));
-            }
-            if (['chair', 'sofa', 'stool'].includes(item.type)) {
-                this.seats.set(`${item.x},${item.y}`, item);
-            }
+            this.addFurni(item);
         }
         this.setWhiteboardText?.(room.whiteboard);
 
@@ -195,12 +204,22 @@ export class RoomScene {
         });
         const end = (e: FederatedPointerEvent) => {
             if (this.dragStart && !this.dragged) {
+                const local = this.world.toLocal(e.global);
+                const tile = screenToTile(local.x, local.y);
+                if (this.build) {
+                    if (this.build.placing && this.isFloor(tile.x, tile.y)) {
+                        this.events.onPlaceFurni?.(tile.x, tile.y);
+                    } else if (!this.build.placing) {
+                        const item = this.furniAt(tile.x, tile.y);
+                        if (item) this.events.onFurniClick?.(item.id);
+                    }
+                    this.dragStart = null;
+                    return;
+                }
                 const avatar = this.avatarAt(e);
                 if (avatar) {
                     this.events.onAvatarClick(avatar);
                 } else {
-                    const local = this.world.toLocal(e.global);
-                    const tile = screenToTile(local.x, local.y);
                     if (this.isFloor(tile.x, tile.y)) {
                         this.events.onTileClick(tile.x, tile.y);
                     }
@@ -228,12 +247,136 @@ export class RoomScene {
     private updateHover(e: FederatedPointerEvent) {
         const local = this.world.toLocal(e.global);
         const tile = screenToTile(local.x, local.y);
+        if (this.hoverTile?.x !== tile.x || this.hoverTile?.y !== tile.y) {
+            this.hoverTile = tile;
+            this.refreshGhost();
+        }
         this.hover.clear();
         if (this.isFloor(tile.x, tile.y)) {
             this.hover.lineStyle(2, 0xffffff, 0.8);
             const pts = [project(tile.x, tile.y), project(tile.x + 1, tile.y), project(tile.x + 1, tile.y + 1), project(tile.x, tile.y + 1)];
             this.hover.drawPolygon(pts.flatMap((p) => [p.x, p.y]));
         }
+    }
+
+    // ---- furniture and build mode ----
+
+    addFurni(item: FurniItem) {
+        this.removeFurni(item.id);
+        if (item.type === 'whiteboard') {
+            const { board, setText } = drawWhiteboard(item);
+            this.world.addChildAt(board, 1);
+            this.setWhiteboardText = setText;
+            this.furni.set(item.id, { item, views: [board] });
+            return;
+        }
+        const views = drawFurni(item);
+        this.entities.addChild(...views);
+        this.furni.set(item.id, { item, views });
+        this.rebuildSeats();
+        this.refreshSelection();
+    }
+
+    furniItem(id: string) {
+        return this.furni.get(id)?.item;
+    }
+
+    removeFurni(id: string) {
+        const existing = this.furni.get(id);
+        if (!existing) return;
+        existing.views.forEach((v) => v.destroy({ children: true }));
+        this.furni.delete(id);
+        this.rebuildSeats();
+    }
+
+    updateFurni(item: FurniItem) {
+        this.addFurni(item);
+    }
+
+    private rebuildSeats() {
+        this.seats.clear();
+        for (const { item } of this.furni.values()) {
+            if (SEAT_TYPES.includes(item.type)) {
+                this.seats.set(`${item.x},${item.y}`, item);
+            }
+        }
+        for (const walker of this.walkers.values()) {
+            this.placeWalker(walker);
+        }
+    }
+
+    private furniAt(x: number, y: number) {
+        const here = [...this.furni.values()].map((f) => f.item).filter((f) => f.x === x && f.y === y && f.type !== 'whiteboard');
+        // Prefer the item on top of a rug.
+        return here.find((f) => f.type !== 'rug') ?? here[0];
+    }
+
+    /** Client-side check that mirrors the server's placement rules, for the ghost's color. */
+    private canPlace(type: string, x: number, y: number) {
+        if (!this.isFloor(x, y) || (x === this.room.doorX && y === this.room.doorY)) return false;
+        const here = [...this.furni.values()].map((f) => f.item).filter((f) => f.x === x && f.y === y);
+        return type === 'rug' ? !here.some((f) => f.type === 'rug') : !here.some((f) => f.type !== 'rug');
+    }
+
+    /** Turns build mode on (owner only) or off (null). */
+    setBuildMode(mode: BuildMode | null) {
+        this.build = mode;
+        this.refreshGhost();
+        this.refreshSelection();
+    }
+
+    private refreshSelection() {
+        for (const { item, views } of this.furni.values()) {
+            const selected = this.build?.selectedId === item.id;
+            for (const view of views) {
+                (view as Container & { tint?: number }).alpha = selected ? 0.75 : 1;
+            }
+        }
+    }
+
+    private refreshGhost() {
+        this.ghost.removeChildren().forEach((c) => c.destroy({ children: true }));
+        const placing = this.build?.placing;
+        const tile = this.hoverTile;
+        if (!placing || !tile || !this.isFloor(tile.x, tile.y)) return;
+        const views = drawFurni({ id: 'ghost', type: placing.type, x: tile.x, y: tile.y, dir: placing.dir });
+        const ok = this.canPlace(placing.type, tile.x, tile.y);
+        for (const view of views) {
+            if (!ok) (view as Graphics).tint = 0xff4d4d;
+            this.ghost.addChild(view);
+        }
+        this.ghost.zIndex = depthOf(tile.x, tile.y, 70);
+    }
+
+    // ---- effects ----
+
+    wave(id: string) {
+        this.walkers.get(id)?.sprite.wave();
+    }
+
+    /** Floats an emoji up from someone's head. */
+    emote(id: string, emoji: string) {
+        const walker = this.walkers.get(id);
+        if (!walker) return;
+        const text = new Text(emoji, { fontSize: 22 });
+        text.anchor.set(0.5, 1);
+        const start = walker.sprite.position;
+        text.position.set(start.x + 14, start.y - 72);
+        this.bubbles.addChild(text);
+        const born = performance.now();
+        const float = () => {
+            const age = (performance.now() - born) / 1000;
+            if (age > 2.2 || text.destroyed) {
+                this.app.ticker.remove(float);
+                if (!text.destroyed) text.destroy();
+                return;
+            }
+            text.y = start.y - 72 - age * 28;
+            text.x = start.x + 14 + Math.sin(age * 5) * 4;
+            text.scale.set(Math.min(1, 0.4 + age * 3));
+            text.alpha = age > 1.6 ? (2.2 - age) / 0.6 : 1;
+        };
+        this.app.ticker.add(float);
     }
 
     // ---- avatars ----
@@ -265,7 +408,11 @@ export class RoomScene {
     }
 
     updateOccupant(occupant: Occupant) {
-        this.walkers.get(occupant.id)?.sprite.update(occupant);
+        const walker = this.walkers.get(occupant.id);
+        if (walker) {
+            walker.sprite.update(occupant);
+            this.placeWalker(walker);
+        }
     }
 
     /** Server path: first entry is where the walk starts, the rest are the steps. */
@@ -308,7 +455,7 @@ export class RoomScene {
         const tileX = Math.round(walker.x);
         const tileY = Math.round(walker.y);
         const seat = walker.to ? undefined : this.seats.get(`${tileX},${tileY}`);
-        const lift = seat ? (seat.type === 'stool' ? 4 : 2) : 0;
+        const lift = seat ? (seat.type === 'stool' ? 4 : seat.type === 'beanbag' ? -2 : 2) : 0;
         walker.sprite.position.set(pos.x, pos.y - lift);
         walker.sprite.zIndex = depthOf(walker.x, walker.y, 50);
         walker.sprite.setPose(seat ? seat.dir : walker.dir, walker.to !== null, Boolean(seat));
@@ -342,11 +489,14 @@ export class RoomScene {
     showChat(message: ChatMessage) {
         const walker = this.walkers.get(message.fromId);
         const view = new Container();
-        const name = new Text(`${message.name}: `, { fontFamily: 'Verdana, sans-serif', fontSize: 11, fontWeight: 'bold', fill: 0x000000 });
+        const whisper = Boolean(message.whisperTo);
+        const label = whisper ? `${message.name} whispers to ${message.whisperTo}: ` : `${message.name}: `;
+        const name = new Text(label, { fontFamily: 'Verdana, sans-serif', fontSize: 11, fontWeight: 'bold', fill: whisper ? 0x5a189a : 0x000000 });
         const text = new Text(message.text, {
             fontFamily: 'Verdana, sans-serif',
             fontSize: 11,
-            fill: 0x000000,
+            fontStyle: whisper ? 'italic' : 'normal',
+            fill: whisper ? 0x5a189a : 0x000000,
             wordWrap: true,
             wordWrapWidth: 220 - name.width,
             breakWords: true,
@@ -355,7 +505,7 @@ export class RoomScene {
         const width = name.width + text.width + 16;
         const height = Math.max(name.height, text.height) + 8;
         const bg = new Graphics();
-        bg.beginFill(0xffffff, 0.96);
+        bg.beginFill(whisper ? 0xe9d8fd : 0xffffff, 0.96);
         bg.lineStyle(1, 0x000000, 0.6);
         bg.drawRoundedRect(0, 0, width, height, 6);
         bg.endFill();

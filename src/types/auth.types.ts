@@ -11,6 +11,7 @@ export interface User {
     isTeacher: boolean;
     accountType: AccountType;
     authProvider: string;
+    token?: string;
 }
 
 export interface LoginFormData {

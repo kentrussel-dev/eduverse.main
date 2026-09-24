@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RoomScene } from './RoomScene';
 import { hubErrorMessage, WorldClient } from './worldClient';
-import { ChatMessage, Occupant, Profile, RoomSnapshot, RoomSummary } from './types';
+import { CatalogItem, ChatMessage, FurniItem, Occupant, Profile, RoomBan, RoomKind, RoomSnapshot, RoomSummary } from './types';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
 
@@ -20,6 +20,12 @@ export const useWorld = () => {
     const [chat, setChat] = useState<ChatMessage[]>([]);
     const [whiteboard, setWhiteboard] = useState('');
     const [quietMode, setQuietMode] = useState(false);
+    const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+    const [bans, setBans] = useState<RoomBan[]>([]);
+    const [roomTab, setRoomTab] = useState('public');
+    const [roomQuery, setRoomQuery] = useState('');
+    const listRef = useRef({ tab: 'public', query: '' });
+    listRef.current = { tab: roomTab, query: roomQuery };
     const [notice, setNotice] = useState<{ text: string; severity: 'info' | 'error' | 'warning' } | null>(null);
 
     const showError = useCallback((error: unknown) => {
@@ -45,9 +51,17 @@ export const useWorld = () => {
     );
 
     const refreshRooms = useCallback(async () => {
-        const list = await run((c) => c.getRooms());
+        const { tab, query } = listRef.current;
+        const list = await run((c) => c.getRooms(tab, query));
         if (list) setRooms(list);
     }, [run]);
+
+    // Reload the room finder when its tab or search changes (search waits for typing to pause).
+    useEffect(() => {
+        if (status !== 'connected') return undefined;
+        const timer = window.setTimeout(refreshRooms, roomQuery ? 300 : 0);
+        return () => window.clearTimeout(timer);
+    }, [roomTab, roomQuery, status, refreshRooms]);
 
     const enterRoom = useCallback(
         async (roomId: string) => {
@@ -58,6 +72,7 @@ export const useWorld = () => {
             setChat(snapshot.chat);
             setWhiteboard(snapshot.whiteboard);
             setQuietMode(snapshot.quietMode);
+            setBans(snapshot.bans);
             refreshRooms();
             return true;
         },
@@ -92,14 +107,30 @@ export const useWorld = () => {
             setChat((prev) => [...prev.slice(-199), message]);
             sceneRef.current?.showChat(message);
         });
+        client.on('whisper', (message: ChatMessage) => {
+            setChat((prev) => [...prev.slice(-199), message]);
+            sceneRef.current?.showChat(message);
+        });
+        client.on('emote', (id: string, emoji: string) => sceneRef.current?.emote(id, emoji));
+        client.on('wave', (id: string) => sceneRef.current?.wave(id));
+        client.on('furniAdded', (item: FurniItem) => sceneRef.current?.addFurni(item));
+        client.on('furniUpdated', (item: FurniItem) => sceneRef.current?.updateFurni(item));
+        client.on('furniRemoved', (id: string) => sceneRef.current?.removeFurni(id));
+        client.on('profile', (p: Profile) => setProfile(p));
+        client.on('roomUpdated', (info: { name: string; description: string; kind: RoomKind; maxUsers: number }) => {
+            setRoom((prev) => (prev ? { ...prev, ...info } : prev));
+        });
         client.on('chatCleared', () => setChat([]));
         client.on('whiteboard', (text: string) => {
             setWhiteboard(text);
             sceneRef.current?.setWhiteboard(text);
         });
-        client.on('roomSettings', (settings: { quietMode: boolean }) => {
-            setQuietMode(settings.quietMode);
-            setNotice({ text: settings.quietMode ? 'Quiet mode is on. Only the teacher can chat.' : 'Quiet mode is off.', severity: 'info' });
+        client.on('roomSettings', (settings: { quietMode?: boolean; bans?: RoomBan[] }) => {
+            if (settings.bans) setBans(settings.bans);
+            if (settings.quietMode !== undefined) {
+                setQuietMode(settings.quietMode);
+                setNotice({ text: settings.quietMode ? 'Quiet mode is on. Only the teacher can chat.' : 'Quiet mode is off.', severity: 'info' });
+            }
         });
         client.on('notice', (text: string) => setNotice({ text, severity: 'info' }));
         client.on('kicked', (reason: string) => {
@@ -124,14 +155,14 @@ export const useWorld = () => {
                 if (disposed) return;
                 setStatus('connected');
                 setProfile(await client.getProfile());
-                setRooms(await client.getRooms());
+                setCatalog(await client.getCatalog());
                 const snapshot = await client.joinRoom('lobby');
                 setRoom(snapshot);
                 setOccupants(Object.fromEntries(snapshot.occupants.map((o) => [o.id, o])));
                 setChat(snapshot.chat);
                 setWhiteboard(snapshot.whiteboard);
                 setQuietMode(snapshot.quietMode);
-                setRooms(await client.getRooms());
+                setRooms(await client.getRooms(listRef.current.tab, listRef.current.query));
             } catch (error) {
                 if (!disposed) {
                     setStatus('disconnected');
@@ -144,7 +175,7 @@ export const useWorld = () => {
         const poll = window.setInterval(async () => {
             if (client.connected) {
                 try {
-                    setRooms(await client.getRooms());
+                    setRooms(await client.getRooms(listRef.current.tab, listRef.current.query));
                 } catch {
                     // ignore; the next poll will retry
                 }
@@ -165,7 +196,14 @@ export const useWorld = () => {
         profile,
         setProfile,
         rooms,
+        roomTab,
+        setRoomTab,
+        roomQuery,
+        setRoomQuery,
+        catalog,
+        bans,
         room,
+        setRoom,
         occupants,
         chat,
         whiteboard,

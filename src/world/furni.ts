@@ -128,6 +128,146 @@ export const drawFurni = (item: FurniItem): Container[] => {
             g.endFill();
             break;
         }
+        case 'beanbag': {
+            const c = project(x + 0.5, y + 0.5, 0);
+            g.beginFill(0xf28482);
+            g.drawEllipse(c.x, c.y - 7, 22, 12);
+            g.endFill();
+            g.beginFill(0xf5a3a1);
+            g.drawEllipse(c.x - 3, c.y - 11, 13, 6);
+            g.endFill();
+            g.zIndex = depthOf(x, y, 10);
+            break;
+        }
+        case 'lamp': {
+            const c = project(x + 0.5, y + 0.5, 0);
+            prism(g, x + 0.38, x + 0.62, y + 0.38, y + 0.62, 0, 4, 0x495057);
+            g.beginFill(0x6c757d);
+            g.drawRect(c.x - 1.5, c.y - 58, 3, 56);
+            g.endFill();
+            g.beginFill(0xffe8a3, 0.35);
+            g.drawCircle(c.x, c.y - 62, 20);
+            g.endFill();
+            g.beginFill(0xffd166);
+            g.drawPolygon([c.x - 9, c.y - 56, c.x + 9, c.y - 56, c.x + 6, c.y - 70, c.x - 6, c.y - 70]);
+            g.endFill();
+            break;
+        }
+        case 'teddy': {
+            const c = project(x + 0.5, y + 0.5, 0);
+            const fur = 0xa0522d;
+            g.beginFill(fur);
+            g.drawEllipse(c.x, c.y - 12, 12, 11);
+            g.drawCircle(c.x - 9, c.y - 32, 5);
+            g.drawCircle(c.x + 9, c.y - 32, 5);
+            g.drawCircle(c.x, c.y - 26, 10);
+            g.drawEllipse(c.x - 10, c.y - 5, 5, 4);
+            g.drawEllipse(c.x + 10, c.y - 5, 5, 4);
+            g.endFill();
+            g.beginFill(0xdeb887);
+            g.drawEllipse(c.x, c.y - 12, 7, 7);
+            g.drawEllipse(c.x, c.y - 23, 4.5, 3.5);
+            g.endFill();
+            g.beginFill(0x1b1b1b);
+            g.drawCircle(c.x - 4, c.y - 28, 1.5);
+            g.drawCircle(c.x + 4, c.y - 28, 1.5);
+            g.drawCircle(c.x, c.y - 24, 1.5);
+            g.endFill();
+            g.beginFill(0xe63946);
+            g.drawPolygon([c.x, c.y - 17, c.x - 6, c.y - 20, c.x - 6, c.y - 14]);
+            g.drawPolygon([c.x, c.y - 17, c.x + 6, c.y - 20, c.x + 6, c.y - 14]);
+            g.endFill();
+            break;
+        }
+        case 'duck': {
+            const c = project(x + 0.5, y + 0.5, 0);
+            g.beginFill(0xffd60a);
+            g.drawEllipse(c.x, c.y - 5, 9, 6);
+            g.drawCircle(c.x + 5, c.y - 13, 5);
+            g.endFill();
+            g.beginFill(0xf77f00);
+            g.drawPolygon([c.x + 9, c.y - 13, c.x + 14, c.y - 12, c.x + 9, c.y - 10]);
+            g.endFill();
+            g.beginFill(0x1b1b1b);
+            g.drawCircle(c.x + 6.5, c.y - 14.5, 1);
+            g.endFill();
+            break;
+        }
+        case 'trophy': {
+            const c = project(x + 0.5, y + 0.5, 0);
+            prism(g, x + 0.3, x + 0.7, y + 0.3, y + 0.7, 0, 10, 0x3d2b1f);
+            g.beginFill(0xffc300);
+            g.drawRect(c.x - 2, c.y - 24, 4, 12);
+            g.drawPolygon([c.x - 11, c.y - 42, c.x + 11, c.y - 42, c.x + 6, c.y - 24, c.x - 6, c.y - 24]);
+            g.endFill();
+            g.lineStyle(2, 0xffc300);
+            g.arc(c.x - 11, c.y - 36, 4, Math.PI / 2, (Math.PI * 3) / 2);
+            g.arc(c.x + 11, c.y - 36, 4, -Math.PI / 2, Math.PI / 2);
+            g.lineStyle(0);
+            g.beginFill(0xffe066);
+            g.drawRect(c.x - 7, c.y - 40, 3, 12);
+            g.endFill();
+            break;
+        }
+        case 'aquarium': {
+            prism(g, x + 0.08, x + 0.92, y + 0.2, y + 0.8, 0, 18, 0x3d2b1f);
+            const glass = new Graphics();
+            flat(glass, x + 0.1, x + 0.9, y + 0.22, y + 0.78, 18, 0x90e0ef, 0.5);
+            poly(glass, 0x48cae4, [project(x + 0.1, y + 0.78, 46), project(x + 0.9, y + 0.78, 46), project(x + 0.9, y + 0.78, 18), project(x + 0.1, y + 0.78, 18)], 0.7);
+            poly(glass, 0x0096c7, [project(x + 0.9, y + 0.22, 46), project(x + 0.9, y + 0.78, 46), project(x + 0.9, y + 0.78, 18), project(x + 0.9, y + 0.22, 18)], 0.7);
+            const f1 = project(x + 0.4, y + 0.78, 32);
+            const f2 = project(x + 0.9, y + 0.5, 26);
+            glass.beginFill(0xff7b00);
+            glass.drawEllipse(f1.x, f1.y, 4, 2.5);
+            glass.drawPolygon([f1.x + 3, f1.y, f1.x + 7, f1.y - 3, f1.x + 7, f1.y + 3]);
+            glass.drawEllipse(f2.x, f2.y, 3.5, 2.2);
+            glass.endFill();
+            glass.beginFill(0x2d6a4f);
+            const weed = project(x + 0.25, y + 0.78, 18);
+            glass.drawEllipse(weed.x, weed.y - 8, 2, 8);
+            glass.endFill();
+            g.addChild(glass);
+            break;
+        }
+        case 'tv': {
+            prism(g, x + 0.1, x + 0.9, y + 0.25, y + 0.75, 0, 14, DARK_WOOD);
+            const screenOnX = item.dir !== 'sw' && item.dir !== 'nw';
+            const [x0, x1, y0, y1] = screenOnX ? [x + 0.35, x + 0.55, y + 0.1, y + 0.9] : [x + 0.1, x + 0.9, y + 0.35, y + 0.55];
+            prism(g, x0, x1, y0, y1, 14, 44, 0x2b2d42);
+            const glow = 0x72efdd;
+            if (item.dir === 'se') {
+                poly(g, glow, [project(x1 + 0.001, y0 + 0.06, 41), project(x1 + 0.001, y1 - 0.06, 41), project(x1 + 0.001, y1 - 0.06, 17), project(x1 + 0.001, y0 + 0.06, 17)]);
+            } else if (item.dir === 'sw') {
+                poly(g, glow, [project(x0 + 0.06, y1 + 0.001, 41), project(x1 - 0.06, y1 + 0.001, 41), project(x1 - 0.06, y1 + 0.001, 17), project(x0 + 0.06, y1 + 0.001, 17)]);
+            }
+            break;
+        }
+        case 'arcade': {
+            prism(g, x + 0.15, x + 0.85, y + 0.15, y + 0.85, 0, 70, 0x7209b7);
+            const faceX = item.dir !== 'sw' && item.dir !== 'nw';
+            if (item.dir === 'se' || item.dir === 'sw') {
+                const p = (u: number, z: number) => (faceX ? project(x + 0.851, y + 0.15 + u * 0.7, z) : project(x + 0.15 + u * 0.7, y + 0.851, z));
+                poly(g, 0x111111, [p(0.1, 64), p(0.9, 64), p(0.9, 40), p(0.1, 40)]);
+                poly(g, 0x4cc9f0, [p(0.18, 61), p(0.82, 61), p(0.82, 44), p(0.18, 44)]);
+                poly(g, 0xf72585, [p(0.1, 36), p(0.9, 36), p(0.9, 30), p(0.1, 30)]);
+                const b1 = p(0.3, 33);
+                const b2 = p(0.6, 33);
+                g.beginFill(0xffd60a);
+                g.drawCircle(b1.x, b1.y, 1.8);
+                g.drawCircle(b2.x, b2.y, 1.8);
+                g.endFill();
+            }
+            break;
+        }
+        case 'block_red':
+        case 'block_blue':
+        case 'block_yellow':
+        case 'block_green': {
+            const colors: Record<string, number> = { block_red: 0xef476f, block_blue: 0x118ab2, block_yellow: 0xffd166, block_green: 0x06d6a0 };
+            prism(g, x + 0.02, x + 0.98, y + 0.02, y + 0.98, 0, 30, colors[item.type]);
+            flat(g, x + 0.2, x + 0.8, y + 0.2, y + 0.8, 30.2, 0xffffff, 0.18);
+            break;
+        }
         case 'rug':
             flat(g, x, x + 1, y, y + 1, 0.5, 0xc1121f, 0.85);
             g.zIndex = depthOf(x, y, -90);
