@@ -32,18 +32,18 @@ export const ThemeModeProvider = ({ children }: ThemeModeProviderProps) => {
                 palette: {
                     mode,
                     primary: {
-                        main: '#6C63FF',
-                        light: '#8F88FF',
-                        dark: '#4B45B3',
+                        main: '#1e7295',
+                        light: '#3c8db5',
+                        dark: '#185d79',
                     },
                     secondary: {
-                        main: '#FF6584',
-                        light: '#FF89A1',
-                        dark: '#B3475C',
+                        main: '#00800b',
+                        light: '#2aa336',
+                        dark: '#006208',
                     },
                     background: {
-                        default: mode === 'dark' ? '#121212' : '#f5f5f5',
-                        paper: mode === 'dark' ? '#1E1E1E' : '#ffffff',
+                        default: mode === 'dark' ? '#10212b' : '#dfdfdf',
+                        paper: mode === 'dark' ? '#16303d' : '#ececec',
                     },
                     text: {
                         primary: mode === 'dark' ? '#ffffff' : '#000000',
@@ -51,7 +51,7 @@ export const ThemeModeProvider = ({ children }: ThemeModeProviderProps) => {
                     },
                 },
                 typography: {
-                    fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
+                    fontFamily: "'Ubuntu', 'Trebuchet MS', 'Helvetica', 'Arial', sans-serif",
                     h1: {
                         fontWeight: 700,
                     },
@@ -66,16 +66,18 @@ export const ThemeModeProvider = ({ children }: ThemeModeProviderProps) => {
                     MuiButton: {
                         styleOverrides: {
                             root: {
-                                borderRadius: 8,
+                                borderRadius: 6,
                                 textTransform: 'none',
-                                fontWeight: 600,
+                                fontWeight: 700,
+                                boxShadow: 'none',
                             },
                         },
                     },
                     MuiPaper: {
                         styleOverrides: {
                             root: {
-                                borderRadius: 12,
+                                borderRadius: 8,
+                                backgroundImage: 'none',
                             },
                         },
                     },

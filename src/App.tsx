@@ -16,11 +16,13 @@ import './App.css';
 const AppContent = () => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  // The world is a full-screen game client with its own toolbar.
+  const isWorld = location.pathname === '/world';
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Navbar />
-      <Box sx={{ pt: { xs: 0, sm: isAuthPage ? 0 : 8 } }}>
+      {!isWorld && <Navbar />}
+      <Box sx={{ pt: { xs: 0, sm: isAuthPage || isWorld ? 0 : 8 } }}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 import { Box, Container, Typography, Button } from '@mui/material';
 
 const GradientBackground = styled.div`
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a1b3d 100%);
+  background: #10212b;
   min-height: 100vh;
   color: white;
   overflow: hidden;
@@ -11,7 +11,7 @@ const GradientBackground = styled.div`
 
 const WavySection = styled.div`
   position: relative;
-  background: #2a1b3d;
+  background: #16303d;
   padding: 100px 0;
   margin-top: 100px;
   &::before {
@@ -55,10 +55,7 @@ export const LandingPage = () => {
                         <Typography variant="h2" sx={{
                             fontWeight: 'bold',
                             mb: 2,
-                            background: 'linear-gradient(45deg, #fff, #8b5cf6)',
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            color: 'transparent',
+                            color: '#fff',
                         }}>
                             Unlock Your Learning Potential
                         </Typography>
@@ -101,7 +98,7 @@ export const LandingPage = () => {
                                         variant="contained"
                                         size="large"
                                         sx={{
-                                            background: 'linear-gradient(45deg, #6366f1 30%, #8b5cf6 90%)',
+                                            background: '#1e7295',
                                             color: 'white',
                                             px: 4,
                                             py: 1.5,

@@ -4,18 +4,18 @@ export const theme = createTheme({
     palette: {
         mode: 'dark',
         primary: {
-            main: '#6366f1', // --primary
-            light: '#818cf8', // --primary-light
-            dark: '#4f46e5', // --primary-dark
+            main: '#1e7295', // --primary
+            light: '#3c8db5', // --primary-light
+            dark: '#185d79', // --primary-dark
         },
         secondary: {
-            main: '#8b5cf6', // --secondary
-            light: '#a78bfa', // --secondary-light
-            dark: '#7c3aed', // --secondary-dark
+            main: '#00800b', // Habbo green, for the main call to action
+            light: '#2aa336',
+            dark: '#006208',
         },
         background: {
-            default: '#1a1a1a', // --bg-dark
-            paper: '#2a1b3d', // --bg-light
+            default: '#10212b',
+            paper: '#16303d',
         },
         text: {
             primary: '#ffffff', // --text-primary
@@ -24,10 +24,11 @@ export const theme = createTheme({
         },
     },
     shape: {
-        borderRadius: 8,
+        borderRadius: 6,
     },
     typography: {
         fontFamily: [
+            'Ubuntu',
             '-apple-system',
             'BlinkMacSystemFont',
             '"Segoe UI"',

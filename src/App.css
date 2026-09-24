@@ -1,18 +1,18 @@
 :root {
   /* Primary Colors */
-  --primary-light: #818cf8;
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
+  --primary-light: #3c8db5;
+  --primary: #1e7295;
+  --primary-dark: #185d79;
 
   /* Secondary Colors */
-  --secondary-light: #a78bfa;
-  --secondary: #8b5cf6;
-  --secondary-dark: #7c3aed;
+  --secondary-light: #3c8db5;
+  --secondary: #185d79;
+  --secondary-dark: #006208;
 
   /* Background Colors */
   --bg-dark: #1a1a1a;
   --bg-darker: #0f0f0f;
-  --bg-light: #2a1b3d;
+  --bg-light: #16303d;
 
   /* Text Colors */
   --text-primary: #ffffff;
@@ -74,12 +74,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #6366f1;
+  background: #1e7295;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #8b5cf6;
+  background: #185d79;
 }
 
 @keyframes App-logo-spin {
@@ -92,16 +92,3 @@ body {
   }
 }
 
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}

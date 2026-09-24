@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import {
-    Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography,
+    Box, Button, MenuItem, Stack, TextField, Typography,
 } from '@mui/material';
+import { HabboWindow, WindowActions } from './HabboWindow';
 import { CreateRoomRequest, RoomKind } from '../types';
 
 interface Props {
-    open: boolean;
     isTeacher: boolean;
     onClose: () => void;
     onCreate: (request: CreateRoomRequest) => Promise<void>;
@@ -18,7 +18,7 @@ const templates: { value: CreateRoomRequest['template']; label: string }[] = [
     { value: 'empty', label: 'Small empty room' },
 ];
 
-export const CreateRoomDialog = ({ open, isTeacher, onClose, onCreate }: Props) => {
+export const CreateRoomDialog = ({ isTeacher, onClose, onCreate }: Props) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [kind, setKind] = useState<RoomKind>(isTeacher ? RoomKind.Classroom : RoomKind.Study);
@@ -39,21 +39,8 @@ export const CreateRoomDialog = ({ open, isTeacher, onClose, onCreate }: Props) 
     const listed = kind === RoomKind.Public || kind === RoomKind.Study;
 
     return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            maxWidth="xs"
-            fullWidth
-            // Defaults depend on the profile, which may load after this component mounts.
-            TransitionProps={{
-                onEnter: () => {
-                    setKind(isTeacher ? RoomKind.Classroom : RoomKind.Study);
-                    setTemplate(isTeacher ? 'classroom' : 'study_hall');
-                },
-            }}
-        >
-            <DialogTitle>Create a room</DialogTitle>
-            <DialogContent>
+        <HabboWindow title="Create a room" onClose={onClose} width={380}>
+            <Box>
                 <Stack spacing={2} mt={1}>
                     <TextField label="Room name" value={name} onChange={(e) => setName(e.target.value)} inputProps={{ maxLength: 40 }} autoFocus />
                     <TextField label="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} inputProps={{ maxLength: 120 }} />
@@ -74,13 +61,13 @@ export const CreateRoomDialog = ({ open, isTeacher, onClose, onCreate }: Props) 
                             : "This room won't be listed. Share its room code so others can join."}
                     </Typography>
                 </Stack>
-            </DialogContent>
-            <DialogActions>
+            </Box>
+            <WindowActions>
                 <Button onClick={onClose}>Cancel</Button>
                 <Button variant="contained" onClick={submit} disabled={busy || name.trim().length < 3}>
                     Create
                 </Button>
-            </DialogActions>
-        </Dialog>
+            </WindowActions>
+        </HabboWindow>
     );
 };

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, ButtonBase, Dialog, DialogActions, DialogContent, DialogTitle, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import { Box, Button, ButtonBase, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import { HabboWindow, WindowActions } from './HabboWindow';
+import { habbo } from './habboTheme';
 import { avatarThumbnail } from '../thumbnails';
 import { AvatarLook, CatalogItem, CatalogKind, Profile } from '../types';
 
@@ -58,7 +60,6 @@ const Thumb = ({ look, size = 64 }: { look: AvatarLook; size?: number }) => {
 };
 
 interface Props {
-    open: boolean;
     profile: Profile;
     catalog: CatalogItem[];
     onClose: () => void;
@@ -66,7 +67,7 @@ interface Props {
     onOpenShop: () => void;
 }
 
-export const AvatarEditor = ({ open, profile, catalog, onClose, onSave, onOpenShop }: Props) => {
+export const AvatarEditor = ({ profile, catalog, onClose, onSave, onOpenShop }: Props) => {
     const [draft, setDraft] = useState<AvatarLook>(profile.look);
     const [section, setSection] = useState<Section>('hairStyle');
 
@@ -81,10 +82,9 @@ export const AvatarEditor = ({ open, profile, catalog, onClose, onSave, onOpenSh
     const draftLocked = sections.some((s) => locked(s.key, draft[s.key]));
 
     return (
-        <Dialog open={open} onClose={onClose} TransitionProps={{ onEnter: () => setDraft(profile.look) }} maxWidth="sm" fullWidth>
-            <DialogTitle>Character</DialogTitle>
-            <DialogContent sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-                <Box sx={{ minWidth: 140, display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: '#1b263b', borderRadius: 2, p: 2 }}>
+        <HabboWindow title="Character" onClose={onClose} width={580}>
+            <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+                <Box sx={{ minWidth: 140, display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: habbo.windowDark, border: `1px solid ${habbo.border}`, borderRadius: 1.5, p: 2 }}>
                     <Thumb look={draft} size={170} />
                     <Typography variant="subtitle2" mt={1}>{profile.name}</Typography>
                 </Box>
@@ -104,8 +104,8 @@ export const AvatarEditor = ({ open, profile, catalog, onClose, onSave, onOpenSh
                                         aria-label={option.label}
                                         sx={{
                                             flexDirection: 'column', borderRadius: 2, p: 0.5, position: 'relative',
-                                            border: selected ? '2px solid #818cf8' : '2px solid rgba(255,255,255,0.1)',
-                                            bgcolor: selected ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
+                                            border: selected ? `2px solid ${habbo.blue}` : '2px solid rgba(0,0,0,0.15)',
+                                            bgcolor: selected ? '#cfe3ec' : '#ececec',
                                             opacity: isLocked ? 0.6 : 1,
                                         }}
                                     >
@@ -131,8 +131,8 @@ export const AvatarEditor = ({ open, profile, catalog, onClose, onSave, onOpenSh
                                         onClick={() => setDraft({ ...draft, [colorKey]: color })}
                                         sx={{
                                             width: 26, height: 26, borderRadius: '50%', bgcolor: color, cursor: 'pointer',
-                                            border: draft[colorKey] === color ? '3px solid #fff' : '2px solid rgba(255,255,255,0.25)',
-                                            outline: draft[colorKey] === color ? '2px solid #6366f1' : 'none',
+                                            border: draft[colorKey] === color ? '3px solid #000' : '1px solid rgba(0,0,0,0.4)',
+                                            outline: 'none',
                                         }}
                                     />
                                 ))}
@@ -140,8 +140,8 @@ export const AvatarEditor = ({ open, profile, catalog, onClose, onSave, onOpenSh
                         </Box>
                     ))}
                 </Box>
-            </DialogContent>
-            <DialogActions>
+            </Box>
+            <WindowActions>
                 {draftLocked && (
                     <Typography variant="body2" color="warning.main" sx={{ mr: 'auto', ml: 2 }}>
                         Some items are locked.
@@ -152,7 +152,7 @@ export const AvatarEditor = ({ open, profile, catalog, onClose, onSave, onOpenSh
                 <Button variant="contained" disabled={draftLocked} onClick={() => onSave(draft)}>
                     Save look
                 </Button>
-            </DialogActions>
-        </Dialog>
+            </WindowActions>
+        </HabboWindow>
     );
 };

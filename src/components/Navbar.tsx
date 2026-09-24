@@ -50,10 +50,7 @@ export const Navbar = () => {
                         variant="h6"
                         sx={{
                             fontWeight: 'bold',
-                            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            color: 'transparent',
+                            color: '#fff',
                             display: 'inline-block',
                         }}                >
                         EduVerse
@@ -68,7 +65,7 @@ export const Navbar = () => {
                             variant="contained"
                             onClick={() => navigate('/world')}
                             sx={{
-                                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                                background: theme.palette.secondary.main,
                                 textTransform: 'none',
                             }}
                         >
@@ -89,7 +86,7 @@ export const Navbar = () => {
                             variant="contained"
                             onClick={() => navigate('/register')}
                             sx={{
-                                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                                background: theme.palette.secondary.main,
                                 textTransform: 'none',
                             }}
                         >
