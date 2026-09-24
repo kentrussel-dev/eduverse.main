@@ -400,6 +400,9 @@ export class RoomScene {
         this.walkers.set(occupant.id, walker);
         this.entities.addChild(sprite);
         this.placeWalker(walker);
+        if (occupant.walkingTo?.length) {
+            this.moveOccupant(occupant.id, [[occupant.x, occupant.y], ...occupant.walkingTo]);
+        }
     }
 
     removeOccupant(id: string) {

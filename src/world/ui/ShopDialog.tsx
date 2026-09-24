@@ -33,7 +33,7 @@ const ClothingImage = ({ item, profile, size = 64 }: { item: CatalogItem; profil
             alive = false;
         };
     }, [key]);
-    return src ? <img src={src} alt="" style={{ height: size }} /> : <Box sx={{ height: size }} />;
+    return src ? <img src={src} alt="" style={{ height: size, imageRendering: 'pixelated' }} /> : <Box sx={{ height: size }} />;
 };
 
 export const Coins = ({ amount }: { amount: number }) => (

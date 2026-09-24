@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeModeProvider } from './contexts/ThemeModeContext';
@@ -8,21 +8,15 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Dashboard } from './pages/Dashboard';
 import { World } from './pages/World';
 import { LandingPage } from './pages/LandingPage';
-import { Navbar } from './components/Navbar';
 import { Box } from '@mui/material';
 import { theme } from './theme/theme';
 import './App.css';
 
+// Each page draws its own header: the site pages use SiteLayout, the world is a full-screen client.
 const AppContent = () => {
-  const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-  // The world is a full-screen game client with its own toolbar.
-  const isWorld = location.pathname === '/world';
-
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      {!isWorld && <Navbar />}
-      <Box sx={{ pt: { xs: 0, sm: isAuthPage || isWorld ? 0 : 8 } }}>
+      <Box>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

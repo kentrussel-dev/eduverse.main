@@ -36,7 +36,8 @@ It connects to the server's SignalR hub (`/hubs/world`, next to `REACT_APP_API_U
 - `src/pages/World.tsx`: the page (navigator, chat, people, host tools, action bar)
 - `src/world/useWorld.ts`: connection and room state
 - `src/world/RoomScene.ts`: PixiJS scene (floor, walls, furniture, walking, chat bubbles, emotes, build mode, camera)
-- `src/world/avatar.ts`, `src/world/furni.ts`, `src/world/iso.ts`: drawing code; everything is drawn with shapes, so there are no image assets yet
+- `src/world/avatar.ts`, `src/world/lpcAvatar.ts`: pixel-art avatars built from LPC sprite sheets in `public/avatar/lpc` (4 directions, walk, sit and idle), recolored to each player's colors
+- `src/world/furni.ts`, `src/world/iso.ts`: floor, walls and furniture, drawn with shapes
 - `src/world/worldClient.ts`: typed wrapper for the hub methods
 - `src/world/ui/`: character creator, shop, build panel, room settings, create-room dialog
 - `src/world/thumbnails.ts`: renders furniture and avatar pictures for the shop and menus
@@ -49,6 +50,17 @@ How to play:
 - 🧱 Build mode (in rooms you own): pick furniture from your inventory, rotate it, click the floor to place it; click placed furniture to rotate or pick it up.
 - ⚙️ Room settings (owners): name, who can find it, max visitors, banned list, delete.
 - Navigator: Public / Popular / My rooms tabs, search, and join by room code. Teachers can create classrooms and share the code.
+
+### Site pages
+
+The public pages (`/`, `/login`, `/register`, `/dashboard`) use the classic Habbo-style layout in `src/site/Site.tsx`.
+Screenshots of the world live in `public/screenshots`.
+
+### Art credits
+
+Avatar sprites come from the [Liberated Pixel Cup](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator)
+(CC-BY-SA 3.0 / GPL 3.0 / OGA-BY 3.0). The artists are listed in `public/avatar/lpc/CREDITS.md`, which the site links to.
+Keep that file with the sprites, and share any edited sprites under the same licenses.
 
 Browser tests can build with `REACT_APP_E2E=true` to expose `window.eduverseScene` for clicking exact tiles.
 
