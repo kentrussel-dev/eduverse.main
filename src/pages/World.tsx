@@ -56,7 +56,7 @@ const AvatarImage = ({ look, height }: { look: AvatarLook; height: number }) => 
             alive = false;
         };
     }, [key]);
-    return src ? <img src={src} alt="" style={{ height, display: 'block' }} /> : <Box sx={{ height }} />;
+    return src ? <img src={src} alt="" style={{ height, display: 'block', imageRendering: 'pixelated' }} /> : <Box sx={{ height }} />;
 };
 
 /** An icon button on the bottom toolbar. */

@@ -1,9 +1,9 @@
-import { Application, Container, DisplayObject, Graphics } from 'pixi.js';
-import { drawAvatar, idlePose } from './avatar';
+import { Application, Container, DisplayObject } from 'pixi.js';
 import { drawFurni } from './furni';
+import { portrait } from './lpcAvatar';
 import { AvatarLook } from './types';
 
-// One hidden renderer draws every thumbnail; results are cached as data URLs.
+// One hidden renderer draws every furni thumbnail; results are cached as data URLs.
 let renderer: Application | null = null;
 const cache = new Map<string, string>();
 
@@ -27,13 +27,13 @@ export const furniThumbnail = (type: string) =>
         return container;
     });
 
-/** Front view of an avatar wearing a look. */
-export const avatarThumbnail = (look: AvatarLook) =>
-    render(`avatar:${JSON.stringify(look)}`, () => {
-        const g = new Graphics();
-        drawAvatar(g, look, idlePose('se'));
-        g.scale.set(2);
-        const container = new Container();
-        container.addChild(g);
-        return container;
+/** Front view of an avatar wearing a look (crisp pixel art, cropped to the character). */
+export const avatarThumbnail = (look: AvatarLook) => {
+    const key = `avatar:${JSON.stringify(look)}`;
+    const cached = cache.get(key);
+    if (cached) return Promise.resolve(cached);
+    return portrait(look, 3).then((url) => {
+        cache.set(key, url);
+        return url;
     });
+};

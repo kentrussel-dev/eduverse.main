@@ -13,14 +13,14 @@ const styles: Record<'hairStyle' | 'top' | 'bottom' | 'hat', { value: string; la
         { value: 'bald', label: 'Bald' },
     ],
     top: [
-        { value: 'tshirt', label: 'T-shirt' }, { value: 'longsleeve', label: 'Long sleeve' }, { value: 'uniform', label: 'School uniform' },
-        { value: 'hoodie', label: 'Hoodie' }, { value: 'dress', label: 'Dress' }, { value: 'jersey', label: 'Jersey' },
+        { value: 'tshirt', label: 'T-shirt' }, { value: 'longsleeve', label: 'Long sleeve' }, { value: 'uniform', label: 'School polo' },
+        { value: 'hoodie', label: 'Cardigan' }, { value: 'dress', label: 'Dress' }, { value: 'jersey', label: 'V-neck' },
     ],
     bottom: [{ value: 'pants', label: 'Pants' }, { value: 'shorts', label: 'Shorts' }, { value: 'skirt', label: 'Skirt' }],
     hat: [
-        { value: 'none', label: 'None' }, { value: 'cap', label: 'Cap' }, { value: 'beanie', label: 'Beanie' },
-        { value: 'bow', label: 'Bow' }, { value: 'party', label: 'Party hat' }, { value: 'headphones', label: 'Headphones' },
-        { value: 'gradcap', label: 'Grad cap' }, { value: 'crown', label: 'Crown' },
+        { value: 'none', label: 'None' }, { value: 'cap', label: 'Cap' }, { value: 'beanie', label: 'Bandana' },
+        { value: 'bow', label: 'Headband' }, { value: 'party', label: 'Holiday hat' }, { value: 'headphones', label: 'Sunglasses' },
+        { value: 'gradcap', label: 'Top hat' }, { value: 'crown', label: 'Crown' },
     ],
 };
 
@@ -56,7 +56,7 @@ const Thumb = ({ look, size = 64 }: { look: AvatarLook; size?: number }) => {
             alive = false;
         };
     }, [key]);
-    return src ? <img src={src} alt="" style={{ height: size, imageRendering: 'auto' }} /> : <Box sx={{ height: size }} />;
+    return src ? <img src={src} alt="" style={{ height: size, imageRendering: 'pixelated' }} /> : <Box sx={{ height: size }} />;
 };
 
 interface Props {

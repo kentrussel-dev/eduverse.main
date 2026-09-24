@@ -1,156 +1,75 @@
-import { motion } from 'framer-motion';
-import styled from '@emotion/styled';
-import { Box, Container, Typography, Button } from '@mui/material';
+import { Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { BigButton, Columns, Screenshot, SiteBox, SiteLayout, site } from '../site/Site';
+import { LoginForm } from '../site/LoginForm';
 
-const GradientBackground = styled.div`
-  background: #10212b;
-  min-height: 100vh;
-  color: white;
-  overflow: hidden;
-`;
+const Feature = ({ title, color, src, alt, children }: { title: string; color: string; src: string; alt: string; children: string }) => (
+    <SiteBox title={title} color={color} sx={{ mb: 0 }}>
+        <Screenshot src={src} alt={alt} />
+        <Box sx={{ mt: 1 }}>{children}</Box>
+    </SiteBox>
+);
 
-const WavySection = styled.div`
-  position: relative;
-  background: #16303d;
-  padding: 100px 0;
-  margin-top: 100px;
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50px;
-    left: 0;
-    width: 100%;
-    height: 50px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%232a1b3d' d='M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E") no-repeat;
-    background-size: cover;
-  }
-`;
-
-const ImageContainer = styled(motion.div)`
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  height: 400px;
-  background: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.5);
-  &::after {
-    content: 'Image Placeholder';
-  }
-`;
-
+/** The front page, laid out like the classic Habbo Hotel front page. */
 export const LandingPage = () => {
+    const navigate = useNavigate();
+
     return (
-        <GradientBackground>
-            <Container>
-                <Box sx={{ pt: 15, pb: 10 }}>
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <Typography variant="h2" sx={{
-                            fontWeight: 'bold',
-                            mb: 2,
-                            color: '#fff',
-                        }}>
-                            Unlock Your Learning Potential
-                        </Typography>
-                        <Typography variant="h5" sx={{ mb: 4, color: 'rgba(255,255,255,0.8)' }}>
-                            Join EduVerse to transform your educational journey with interactive learning experiences
-                        </Typography>
-                    </motion.div>
-
-                    <Box
-                        sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                            gap: 4,
-                            mt: 4
-                        }}
-                    >
-                        <Box>
-                            <motion.div
-                                initial={{ opacity: 0, x: -50 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.8, delay: 0.2 }}
-                            >
-                                <ImageContainer />
-                            </motion.div>
-                        </Box>
-                        <Box>
-                            <Box sx={{ pl: { md: 4 }, pt: { xs: 2, md: 8 } }}>
-                                <motion.div
-                                    initial={{ opacity: 0, x: 50 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.8, delay: 0.4 }}
-                                >
-                                    <Typography variant="h4" sx={{ mb: 3 }}>
-                                        Immersive Learning Environment
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ mb: 3, color: 'rgba(255,255,255,0.7)' }}>
-                                        Experience education like never before with our cutting-edge virtual classrooms and interactive learning tools.
-                                    </Typography>
-                                    <Button
-                                        variant="contained"
-                                        size="large"
-                                        sx={{
-                                            background: '#1e7295',
-                                            color: 'white',
-                                            px: 4,
-                                            py: 1.5,
-                                        }}
-                                    >
-                                        Start Learning
-                                    </Button>
-                                </motion.div>
+        <SiteLayout>
+            <Columns
+                left={(
+                    <>
+                        <SiteBox title="Sign in">
+                            <LoginForm />
+                        </SiteBox>
+                        <SiteBox title="New to EduVerse?" color={site.green}>
+                            Make a character, meet your classmates and join your teacher’s classroom. It’s free for students and teachers.
+                            <Box sx={{ mt: 1.5 }}>
+                                <BigButton fullWidth onClick={() => navigate('/register')}>Join now ›</BigButton>
                             </Box>
+                        </SiteBox>
+                        <SiteBox title="Safe for students" color={site.orange}>
+                            <Box id="safety" component="ul" sx={{ m: 0, pl: 2.25 }}>
+                                <li>Bad words are hidden automatically.</li>
+                                <li>Links, emails and phone numbers are blocked in chat.</li>
+                                <li>No private messages between strangers.</li>
+                                <li>Teachers can mute, remove and ban.</li>
+                                <li>Anyone can report someone in one click.</li>
+                                <li>Only first names are shown.</li>
+                            </Box>
+                        </SiteBox>
+                    </>
+                )}
+                right={(
+                    <>
+                        <SiteBox title="Welcome to EduVerse!">
+                            <Screenshot src="main-hall.png" alt="Students chatting in the Main Hall" caption="The Main Hall, where students from every school hang out." />
+                            <Box sx={{ mt: 1.5, fontSize: 13.5 }}>
+                                EduVerse is a pixel world for schools. Walk around, chat with classmates, study together
+                                in the library and go to class in a virtual classroom with your teacher.
+                            </Box>
+                        </SiteBox>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                            <Feature title="Virtual classrooms" color={site.blue} src="classroom.png" alt="A classroom with students at desks">
+                                Teachers write on the whiteboard, students raise their hands, and quiet mode keeps the lesson on track.
+                            </Feature>
+                            <Feature title="Design your own room" color={site.green} src="own-room.png" alt="A decorated student room">
+                                Get furniture from the shop and decorate your room, then invite friends with a room code.
+                            </Feature>
+                            <Feature title="Dress up your character" color={site.orange} src="character.png" alt="The character editor">
+                                Pick hair, clothes, colors and hats. Save up coins for special items.
+                            </Feature>
+                            <Feature title="Shop with coins" color={site.red} src="shop.png" alt="The furniture shop">
+                                Collect free coins every day and spend them on sofas, aquariums, arcade machines and more.
+                            </Feature>
                         </Box>
-                    </Box>
-                </Box>
-            </Container>
-
-            <WavySection>
-                <Container>
-                    <Box
-                        sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                            gap: 6,
-                            alignItems: 'center'
-                        }}
-                    >
-                        <Box>
-                            <motion.div
-                                initial={{ opacity: 0, y: 50 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8 }}
-                                viewport={{ once: true }}
-                            >
-                                <Typography variant="h3" sx={{ mb: 4 }}>
-                                    Learn Together, Grow Together
-                                </Typography>
-                                <Typography variant="body1" sx={{ mb: 3, color: 'rgba(255,255,255,0.7)' }}>
-                                    Join a community of learners and educators passionate about knowledge sharing and growth.
-                                </Typography>
-                            </motion.div>
-                        </Box>
-                        <Box>
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.8 }}
-                                viewport={{ once: true }}
-                            >
-                                <ImageContainer />
-                            </motion.div>
-                        </Box>
-                    </Box>
-                </Container>
-            </WavySection>
-        </GradientBackground>
+                        <SiteBox title="For teachers" color={site.navy} sx={{ mt: 2 }}>
+                            Create a classroom, share its six-letter code with your students, and run your lesson right in the world.
+                            You can see every whisper in your room, turn on quiet mode, and move troublemakers out.
+                        </SiteBox>
+                    </>
+                )}
+            />
+        </SiteLayout>
     );
 };

@@ -65,6 +65,8 @@ export interface Occupant {
     handRaised: boolean;
     dance: number;
     sittingOnFloor: boolean;
+    /** Tiles still to walk, for people who were mid-walk when you arrived. */
+    walkingTo?: number[][];
 }
 
 export interface ChatMessage {
