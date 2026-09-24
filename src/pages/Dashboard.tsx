@@ -5,12 +5,22 @@ import { useNavigate } from 'react-router-dom';
 import { avatarThumbnail } from '../world/thumbnails';
 import { AvatarLook } from '../world/types';
 import { useAuth } from '../contexts/AuthContext';
-import { BigButton, Columns, Screenshot, SiteBox, SiteLayout, site } from '../site/Site';
+import { BigButton, Columns, Shot, Showcase, SiteBox, SiteLayout, site } from '../site/Site';
 
 const places = [
     { name: 'Main Hall', text: 'Meet students from every school.' },
     { name: 'Quiet Library', text: 'Study together. Keep chat on-topic.' },
     { name: 'Classroom 101', text: 'An open classroom any teacher can run.' },
+];
+
+/** What's inside EduVerse, shown on the dashboard. */
+const showcase: Shot[] = [
+    { src: 'main-hall.png', title: 'Main Hall', caption: 'The big lobby: a lounge, a cafe, a snack bar, a games corner and a study corner. Say hi!' },
+    { src: 'library.png', title: 'Quiet Library', caption: 'Reading tables, computer desks and a cosy reading nook for studying together.' },
+    { src: 'classroom.png', title: 'Classroom 101', caption: 'Teachers write on the whiteboard, students raise their hands.' },
+    { src: 'own-room.png', title: 'Your own apartment', caption: 'Create a furnished apartment or house, then decorate it with your 100 pieces of furniture.' },
+    { src: 'character.png', title: 'Character editor', caption: 'Pick hair, clothes, colors and hats, with a wardrobe for boys and girls.' },
+    { src: 'shop.png', title: 'The shop', caption: 'Over 200 pieces of furniture and clothes to buy with your coins.' },
 ];
 
 interface WorldProfile {
@@ -112,7 +122,7 @@ export const Dashboard = () => {
                 right={(
                     <>
                         <SiteBox title="What’s happening in EduVerse">
-                            <Screenshot src="main-hall.png" alt="The Main Hall" caption="The Main Hall is the lobby. Say hi!" />
+                            <Showcase shots={showcase} />
                         </SiteBox>
                         <SiteBox title="How to play" color={site.orange}>
                             <Box component="ol" sx={{ m: 0, pl: 2.5 }}>
