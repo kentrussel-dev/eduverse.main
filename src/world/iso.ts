@@ -1,5 +1,4 @@
 import { Graphics } from 'pixi.js';
-import { Dir } from './types';
 
 // Isometric projection: a tile is a 64x32 diamond. Tile (x, y) has its top corner at
 // ((x - y) * 32, (x + y) * 16). +x runs down-right on screen, +y runs down-left.
@@ -24,12 +23,6 @@ export const screenToTile = (sx: number, sy: number) => {
     return { x: Math.floor(fx), y: Math.floor(fy) };
 };
 
-/** Which way an avatar faces when stepping by (dx, dy). */
-export const dirFromStep = (dx: number, dy: number): Dir => {
-    const sx = dx - dy;
-    const sy = dx + dy;
-    return `${sy >= 0 ? 's' : 'n'}${sx >= 0 ? 'e' : 'w'}` as Dir;
-};
 
 export const shade = (hex: number, amount: number) => {
     const r = Math.min(255, Math.max(0, ((hex >> 16) & 0xff) + amount));

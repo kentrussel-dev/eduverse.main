@@ -1,7 +1,8 @@
 import { Application, Container, FederatedPointerEvent, Graphics, Text } from 'pixi.js';
 import { AvatarSprite } from './avatar';
+import { Dir8, dirForFacing, dirForStep } from './pixelAvatar';
 import { depthOf, drawFurni, drawWhiteboard } from './furni';
-import { dirFromStep, flat, poly, project, screenToTile, shade, tileCenter } from './iso';
+import { flat, poly, project, screenToTile, shade, tileCenter } from './iso';
 import { ChatMessage, Dir, FurniItem, Occupant, RoomSnapshot } from './types';
 
 /** Must match Occupant.StepSeconds on the server. */
@@ -17,7 +18,8 @@ interface Walker {
     from: [number, number];
     to: [number, number] | null;
     progress: number;
-    dir: Dir;
+    /** Facing while standing or walking. */
+    dir: Dir8;
 }
 
 interface Bubble {
@@ -451,9 +453,19 @@ export class RoomScene {
             return;
         }
         walker.from = [Math.round(walker.x), Math.round(walker.y)];
+        const dx = next[0] - walker.from[0];
+        const dy = next[1] - walker.from[1];
+        if (Math.max(Math.abs(dx), Math.abs(dy)) > 1) {
+            // Out of sync with the server: jump rather than sliding several tiles in one step.
+            walker.x = next[0];
+            walker.y = next[1];
+            walker.to = null;
+            this.nextStep(walker);
+            return;
+        }
         walker.to = next;
         walker.progress = 0;
-        walker.dir = dirFromStep(next[0] - walker.from[0], next[1] - walker.from[1]);
+        walker.dir = dirForStep(dx, dy);
     }
 
     private placeWalker(walker: Walker) {
@@ -464,7 +476,7 @@ export class RoomScene {
         const lift = seat ? (seat.type === 'stool' ? 4 : seat.type === 'beanbag' ? -2 : 2) : 0;
         walker.sprite.position.set(pos.x, pos.y - lift);
         walker.sprite.zIndex = depthOf(walker.x, walker.y, 50);
-        walker.sprite.setPose(seat ? seat.dir : walker.dir, walker.to !== null, Boolean(seat));
+        walker.sprite.setPose(seat ? dirForFacing(seat.dir) : walker.dir, walker.to !== null, Boolean(seat));
     }
 
     private tick = () => {

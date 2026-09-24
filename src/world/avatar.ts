@@ -1,37 +1,30 @@
 import { Container, Rectangle, Sprite, Text, Texture } from 'pixi.js';
-import { Anim, FrameSet, loadFrames, ROW_FOR_DIR } from './lpcAvatar';
-import { Dir, Occupant } from './types';
+import { avatarFrame, Dir8, FEET_Y, FRAME_H, FRAME_W, Pose, PoseKind } from './pixelAvatar';
+import { Occupant } from './types';
 
-/** Sprites are 64px frames; this makes the character about one tile tall like Habbo. */
-const SCALE = 1.2;
-/** The feet sit a couple of pixels above the bottom of each frame. */
-const FEET_Y = 62;
-const WALK_FPS = 11;
-const IDLE_FPS = 1.6;
+const WALK_FPS = 9;
 
 /**
- * A pixel-art avatar built from LPC sprites (see lpcAvatar.ts). The origin is at the feet,
+ * A Habbo-style pixel avatar (see pixelAvatar.ts) in 8 directions. The origin is at the feet,
  * so it can be placed on a tile center.
  */
 export class AvatarSprite extends Container {
     private body = new Sprite(Texture.EMPTY);
     private label: Text;
     private hand = new Text('✋', { fontSize: 15 });
-    private waveIcon = new Text('👋', { fontSize: 16 });
     private occupant: Occupant;
-    private frames: FrameSet | null = null;
-    private lookKey = '';
-    private dir: Dir = 'se';
+    private dir: Dir8 = 'se';
     private walking = false;
     private seat: 'chair' | 'floor' | null = null;
     private time = 0;
     private waveLeft = 0;
+    private nextBlink = 2 + Math.random() * 3;
+    private blinkLeft = 0;
 
     constructor(occupant: Occupant, isYou: boolean) {
         super();
         this.occupant = occupant;
-        this.body.anchor.set(0.5, FEET_Y / 64);
-        this.body.scale.set(SCALE);
+        this.body.anchor.set(0.5, FEET_Y / FRAME_H);
         this.label = new Text(occupant.name, {
             fontFamily: 'Verdana, sans-serif',
             fontSize: 10,
@@ -42,14 +35,12 @@ export class AvatarSprite extends Container {
         });
         this.label.anchor.set(0.5, 1);
         this.hand.anchor.set(0.5, 1);
-        this.waveIcon.anchor.set(0.5, 1);
-        this.waveIcon.visible = false;
-        this.addChild(this.body, this.label, this.hand, this.waveIcon);
+        this.addChild(this.body, this.label, this.hand);
 
         this.eventMode = 'static';
         this.cursor = 'pointer';
-        this.hitArea = new Rectangle(-16, -64, 32, 68);
-        this.applyOccupant();
+        this.hitArea = new Rectangle(-FRAME_W / 2, -58, FRAME_W, 62);
+        this.applyPose();
     }
 
     get id() {
@@ -58,27 +49,11 @@ export class AvatarSprite extends Container {
 
     update(occupant: Occupant) {
         this.occupant = occupant;
-        this.applyOccupant();
-    }
-
-    private applyOccupant() {
-        this.label.text = this.occupant.name + (this.occupant.muted ? ' 🔇' : '');
-        const key = JSON.stringify(this.occupant.look);
-        if (key !== this.lookKey) {
-            this.lookKey = key;
-            loadFrames(this.occupant.look)
-                .then((frames) => {
-                    if (this.destroyed || key !== this.lookKey) return;
-                    this.frames = frames;
-                    this.applyPose();
-                })
-                .catch(() => undefined);
-        }
         this.applyPose();
     }
 
-    /** Sets direction, walking and sitting; floor sitting comes from the occupant state. */
-    setPose(dir: Dir, walking: boolean, onSeat: boolean) {
+    /** Sets the facing, walking and sitting; floor sitting comes from the occupant state. */
+    setPose(dir: Dir8, walking: boolean, onSeat: boolean) {
         const seat = onSeat ? 'chair' : this.occupant.sittingOnFloor && !walking ? 'floor' : null;
         if (dir !== this.dir || walking !== this.walking || seat !== this.seat) {
             this.dir = dir;
@@ -96,60 +71,62 @@ export class AvatarSprite extends Container {
     tick(deltaSeconds: number) {
         this.time += deltaSeconds;
         if (this.waveLeft > 0) this.waveLeft = Math.max(0, this.waveLeft - deltaSeconds);
+        this.nextBlink -= deltaSeconds;
+        if (this.nextBlink <= 0) {
+            this.blinkLeft = 0.15;
+            this.nextBlink = 2.5 + Math.random() * 3.5;
+        }
+        if (this.blinkLeft > 0) this.blinkLeft -= deltaSeconds;
         this.applyPose();
     }
 
     private applyPose() {
         const dance = this.seat ? 0 : this.occupant.dance;
+        const t = this.time;
         let dir = this.dir;
-        let anim: Anim = 'idle';
-        let frame = Math.floor(this.time * IDLE_FPS) % 2;
+        let kind: PoseKind = this.seat === 'chair' ? 'sit' : this.seat === 'floor' ? 'floor' : this.walking ? 'walk' : 'stand';
+        let frame = Math.floor(t * WALK_FPS) % 4;
+        let nearArmUp = this.occupant.handRaised || this.waveLeft > 0;
+        let bothArmsUp = false;
         let bob = 0;
-        let sway = 0;
 
-        if (this.seat) {
-            anim = 'sit';
-            // Column 2 is sitting on a chair, column 0 sitting on the floor.
-            frame = this.seat === 'chair' ? 2 : 0;
-        } else if (this.walking) {
-            anim = 'walk';
-            frame = 1 + (Math.floor(this.time * WALK_FPS) % 8);
-        } else if (dance) {
-            const t = this.time;
+        if (dance && !this.walking) {
             switch (dance) {
-                case 1: // hab dance: step in place and bob
-                    anim = 'walk';
-                    frame = 1 + (Math.floor(t * 8) % 8);
-                    bob = Math.abs(Math.sin(t * 8)) * 3;
+                case 1: // hab dance: step in place, arms taking turns
+                    kind = 'walk';
+                    frame = Math.floor(t * 7) % 4;
+                    nearArmUp = frame < 2;
+                    bob = frame % 2;
                     break;
-                case 2: // pogo: jump up and down
-                    bob = Math.abs(Math.sin(t * 7)) * 9;
+                case 2: // pogo: jump with both arms up
+                    bothArmsUp = true;
+                    bob = Math.round(Math.abs(Math.sin(t * 7)) * 8);
                     break;
                 case 3: // duck funk: turn from side to side
-                    dir = Math.floor(t * 3) % 2 === 0 ? 'sw' : 'ne';
-                    anim = 'walk';
-                    frame = 1 + (Math.floor(t * 10) % 8);
-                    sway = Math.sin(t * 6) * 3;
+                    dir = Math.floor(t * 3) % 2 === 0 ? 'sw' : 'se';
+                    kind = 'walk';
+                    frame = Math.floor(t * 9) % 4;
                     break;
-                default: // rollie: spin through all four directions
-                    dir = (['se', 'sw', 'nw', 'ne'] as Dir[])[Math.floor(t * 4) % 4];
-                    bob = Math.abs(Math.sin(t * 8)) * 2;
+                default: // rollie: spin through all eight directions
+                    dir = (['s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se'] as Dir8[])[Math.floor(t * 8) % 8];
+                    bob = Math.round(Math.abs(Math.sin(t * 8)) * 2);
                     break;
             }
         }
 
-        if (this.frames) {
-            this.body.texture = this.frames[anim][ROW_FOR_DIR[dir]][frame];
-        }
-        this.body.position.set(sway, -bob);
+        const pose: Pose = { kind, frame, nearArmUp, bothArmsUp, blink: this.blinkLeft > 0 };
+        const { texture, mirror } = avatarFrame(this.occupant.look, dir, pose);
+        this.body.texture = texture;
+        this.body.scale.x = mirror ? -1 : 1;
+        // Waving flaps the raised hand side to side.
+        const flap = this.waveLeft > 0 && !this.occupant.handRaised ? Math.round(Math.sin(t * 16)) : 0;
+        this.body.position.set(flap, -bob);
 
-        const seated = this.seat !== null;
-        const headTop = (seated ? -44 : -58) - bob;
-        this.label.position.set(0, headTop - 4);
+        const drop = kind === 'sit' ? 7 : kind === 'floor' ? 13 : 0;
+        const headTop = -52 + drop - bob;
+        this.label.text = this.occupant.name + (this.occupant.muted ? ' 🔇' : '');
+        this.label.position.set(0, headTop - 6);
         this.hand.visible = this.occupant.handRaised;
         this.hand.position.set(this.label.width / 2 + 9, this.label.y + 2);
-        this.waveIcon.visible = this.waveLeft > 0;
-        this.waveIcon.position.set(14, headTop + 14);
-        this.waveIcon.rotation = Math.sin(this.time * 14) * 0.4;
     }
 }
