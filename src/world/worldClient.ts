@@ -1,6 +1,6 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { tokenStore } from '../services/auth.service';
-import { AvatarLook, BoardState, CatalogItem, CreateRoomRequest, Profile, RoomSettings, RoomSnapshot, RoomSummary } from './types';
+import { AvatarLook, BoardState, RoomLayout, CatalogItem, CreateRoomRequest, Profile, RoomSettings, RoomSnapshot, RoomSummary } from './types';
 
 // REACT_APP_API_URL points at ".../api"; the hub lives next to it at "/hubs/world".
 const serverUrl = (process.env.REACT_APP_API_URL ?? 'http://localhost:5000/api').replace(/\/api\/?$/, '');
@@ -58,6 +58,7 @@ export class WorldClient {
     // Room owner: building and settings
     placeFurni = (type: string, x: number, y: number, dir: string) => this.connection.invoke('PlaceFurni', type, x, y, dir);
     rotateFurni = (furniId: string) => this.connection.invoke('RotateFurni', furniId);
+    getLayouts = () => this.connection.invoke<RoomLayout[]>('GetLayouts');
     pickUpAll = () => this.connection.invoke('PickUpAll');
     setRoomStyle = (wallpaper: string, floor: string) => this.connection.invoke('SetRoomStyle', wallpaper, floor);
     pickUpFurni = (furniId: string) => this.connection.invoke('PickUpFurni', furniId);

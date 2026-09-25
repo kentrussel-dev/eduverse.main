@@ -170,7 +170,7 @@ export interface CreateRoomRequest {
     name: string;
     description: string;
     kind: RoomKind;
-    template: 'apartment' | 'house' | 'classroom' | 'study_hall' | 'lounge' | 'empty';
+    template: string;
 }
 
 /** The shared drawing board: the Excalidraw scene (JSON), its picture, and who may draw. */
@@ -180,4 +180,14 @@ export interface BoardState {
     everyone: boolean;
     /** Occupant ids the host let draw. */
     drawers: string[];
+}
+
+/** A free empty room shape for the create-room window. */
+export interface RoomLayout {
+    id: string;
+    name: string;
+    layout: string[];
+    doorX: number;
+    doorY: number;
+    tiles: number;
 }
