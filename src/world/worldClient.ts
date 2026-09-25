@@ -58,6 +58,8 @@ export class WorldClient {
     // Room owner: building and settings
     placeFurni = (type: string, x: number, y: number, dir: string) => this.connection.invoke('PlaceFurni', type, x, y, dir);
     rotateFurni = (furniId: string) => this.connection.invoke('RotateFurni', furniId);
+    pickUpAll = () => this.connection.invoke('PickUpAll');
+    setRoomStyle = (wallpaper: string, floor: string) => this.connection.invoke('SetRoomStyle', wallpaper, floor);
     pickUpFurni = (furniId: string) => this.connection.invoke('PickUpFurni', furniId);
     updateRoomSettings = (settings: RoomSettings) => this.connection.invoke('UpdateRoomSettings', settings);
     deleteRoom = () => this.connection.invoke('DeleteRoom');

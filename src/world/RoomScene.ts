@@ -1,6 +1,7 @@
 import { Application, Container, FederatedPointerEvent, Graphics, Text } from 'pixi.js';
 import { AvatarSprite } from './avatar';
 import { Dir8, dirForFacing, dirForStep } from './directions';
+import { floorOf, wallpaperOf } from './roomStyles';
 import { depthOf, drawFurni, drawWhiteboard, isRug, isSeat } from './furni';
 import { flat, poly, project, screenToTile, shade, tileCenter } from './iso';
 import { ChatMessage, Dir, FurniItem, Occupant, RoomSnapshot } from './types';
@@ -78,7 +79,8 @@ export class RoomScene {
 
         this.entities.sortableChildren = true;
         this.ghost.alpha = 0.55;
-        this.world.addChild(this.buildRoomShell(), this.hover, this.entities, this.bubbles);
+        this.shell = this.buildRoomShell();
+        this.world.addChild(this.shell, this.hover, this.entities, this.bubbles);
         this.entities.addChild(this.ghost);
         this.app.stage.addChild(this.world);
 
@@ -119,13 +121,49 @@ export class RoomScene {
 
     private isFloor = (x: number, y: number) => this.floor.has(`${x},${y}`);
 
+    private shell: Graphics | null = null;
+
+    /** Repaints the walls and floor with a new wallpaper and floor theme. */
+    setStyle(wallpaper: string, floor: string) {
+        this.room = { ...this.room, wallpaper, floor };
+        const next = this.buildRoomShell();
+        const index = this.shell ? this.world.getChildIndex(this.shell) : 0;
+        this.shell?.destroy();
+        this.shell = next;
+        this.world.addChildAt(next, index);
+    }
+
     private buildRoomShell() {
         const g = new Graphics();
         const { layout, doorX, doorY } = this.room;
+        const paper = wallpaperOf(this.room.wallpaper);
+        const tiling = floorOf(this.room.floor);
         layout.forEach((row, y) => [...row].forEach((c, x) => c !== 'x' && this.floor.add(`${x},${y}`)));
 
-        const wallLeft = 0xb8c0d9;
-        const wallRight = 0x9aa3c2;
+        const wallLeft = paper.color;
+        const wallRight = shade(paper.color, -30);
+        /** Wallpaper pattern on one wall tile: along x (right wall) or y (left wall). */
+        const pattern = (x: number, y: number, alongX: boolean, base: number) => {
+            if (!paper.pattern || paper.accent === undefined) return;
+            const accent = alongX ? shade(paper.accent, -30) : paper.accent;
+            const at = (t: number, z: number) => (alongX ? project(x + t, y, z) : project(x, y + t, z));
+            if (paper.pattern === 'stripes' || paper.pattern === 'planks') {
+                const n = paper.pattern === 'stripes' ? 4 : 3;
+                for (let i = 0; i < n; i += 1) {
+                    const t0 = i / n + (paper.pattern === 'stripes' ? 0 : 0.96 / n);
+                    const t1 = paper.pattern === 'stripes' ? t0 + 0.5 / n : (i + 1) / n;
+                    poly(g, accent, [at(t0, 0), at(t1, 0), at(t1, WALL_HEIGHT), at(t0, WALL_HEIGHT)]);
+                }
+            } else if (paper.pattern === 'brick') {
+                for (let z = 10; z < WALL_HEIGHT; z += 10) poly(g, accent, [at(0, z), at(1, z), at(1, z + 1.2), at(0, z + 1.2)]);
+                for (let z = 0, row = 0; z < WALL_HEIGHT; z += 10, row += 1) {
+                    for (const t of row % 2 ? [0.25, 0.75] : [0.5]) poly(g, accent, [at(t, z), at(t + 0.03, z), at(t + 0.03, z + 10), at(t, z + 10)]);
+                }
+            } else if (paper.pattern === 'panel') {
+                poly(g, accent, [at(0, 0), at(1, 0), at(1, 40), at(0, 40)]);
+                poly(g, shade(base, 40), [at(0, 40), at(1, 40), at(1, 43), at(0, 43)]);
+            }
+        };
         const tiles = [...this.floor].map((key) => key.split(',').map(Number));
 
         // Back walls: a tile with nothing behind it gets a wall on that edge (except the door).
@@ -139,23 +177,25 @@ export class RoomScene {
                     poly(g, wallLeft, [project(x, y + 0.85, 0), project(x, y + 1, 0), project(x, y + 1, WALL_HEIGHT), project(x, y + 0.85, WALL_HEIGHT)]);
                 } else {
                     poly(g, wallLeft, [project(x, y, 0), project(x, y + 1, 0), project(x, y + 1, WALL_HEIGHT), project(x, y, WALL_HEIGHT)]);
+                    pattern(x, y, false, wallLeft);
                 }
                 poly(g, shade(wallLeft, 30), [project(x, y, WALL_HEIGHT), project(x, y + 1, WALL_HEIGHT), project(x - 0.15, y + 1, WALL_HEIGHT), project(x - 0.15, y, WALL_HEIGHT)]);
             }
             if (!this.isFloor(x, y - 1)) {
                 poly(g, wallRight, [project(x, y, 0), project(x + 1, y, 0), project(x + 1, y, WALL_HEIGHT), project(x, y, WALL_HEIGHT)]);
+                pattern(x, y, true, wallRight);
                 poly(g, shade(wallRight, 45), [project(x, y, WALL_HEIGHT), project(x + 1, y, WALL_HEIGHT), project(x + 1, y - 0.15, WALL_HEIGHT), project(x, y - 0.15, WALL_HEIGHT)]);
             }
         }
 
         // Floor, with a visible edge on the front sides.
         for (const [x, y] of tiles) {
-            const color = (x + y) % 2 === 0 ? 0xc9a47a : 0xbf9a70;
+            const color = (x + y) % 2 === 0 ? tiling.a : tiling.b;
             if (!this.isFloor(x, y + 1)) {
-                poly(g, 0x6b4f33, [project(x, y + 1, 0), project(x + 1, y + 1, 0), project(x + 1, y + 1, -8), project(x, y + 1, -8)]);
+                poly(g, tiling.edge, [project(x, y + 1, 0), project(x + 1, y + 1, 0), project(x + 1, y + 1, -8), project(x, y + 1, -8)]);
             }
             if (!this.isFloor(x + 1, y)) {
-                poly(g, 0x553d27, [project(x + 1, y, 0), project(x + 1, y + 1, 0), project(x + 1, y + 1, -8), project(x + 1, y, -8)]);
+                poly(g, shade(tiling.edge, -20), [project(x + 1, y, 0), project(x + 1, y + 1, 0), project(x + 1, y + 1, -8), project(x + 1, y, -8)]);
             }
             flat(g, x, x + 1, y, y + 1, 0, color);
             g.lineStyle(1, 0x000000, 0.08);

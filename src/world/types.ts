@@ -113,6 +113,8 @@ export interface RoomSnapshot {
     quietMode: boolean;
     /** A small picture of the drawing board, shown on the whiteboard in the room. */
     boardPreview: string;
+    wallpaper?: string;
+    floor?: string;
     youId: string;
     youAreHost: boolean;
     youAreOwner: boolean;

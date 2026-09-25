@@ -126,6 +126,10 @@ export const useWorld = () => {
             setWhiteboard(text);
             sceneRef.current?.setWhiteboard(text);
         });
+        client.on('roomStyle', (wallpaper: string, floor: string) => {
+            setRoom((r) => (r ? { ...r, wallpaper, floor } : r));
+            sceneRef.current?.setStyle(wallpaper, floor);
+        });
         client.on('boardUpdated', (_scene: string, preview: string) => sceneRef.current?.setBoardPicture(preview));
         client.on('roomSettings', (settings: { quietMode?: boolean; bans?: RoomBan[] }) => {
             if (settings.bans) setBans(settings.bans);
