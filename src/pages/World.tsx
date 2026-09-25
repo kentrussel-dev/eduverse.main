@@ -34,6 +34,7 @@ import { RoomSettingsDialog } from '../world/ui/RoomSettingsDialog';
 import { Coins, ShopDialog } from '../world/ui/ShopDialog';
 import { loadFurniAssets } from '../world/furniAssets';
 import { BoardPanel } from '../world/ui/BoardPanel';
+import { ConfirmWindow } from '../world/ui/ConfirmWindow';
 import DrawIcon from '@mui/icons-material/Draw';
 import {
     AvatarLook, CatalogItem, DANCES, Dir, EMOTES, Occupant, RoomKind, roomKindLabel, RoomSummary,
@@ -102,6 +103,7 @@ const WorldClient = () => {
     const { room, occupants, profile, status, run, sceneRef, catalog, clientRef } = world;
     // The drawing board docked on the right half of the screen.
     const [boardOpen, setBoardOpen] = useState(false);
+    const [confirmPickUpAll, setConfirmPickUpAll] = useState(false);
     const hasBoard = Boolean(room?.furni.some((f) => f.type === 'whiteboard'));
     // The room gets narrower when the board opens; tell Pixi so it resizes and re-centres.
     useEffect(() => {
@@ -463,7 +465,7 @@ const WorldClient = () => {
             floor={room?.floor ?? 'default'}
             onStyle={(w, f) => run((c) => c.setRoomStyle(w, f))}
             onPickUpAll={() => {
-                if (window.confirm('Pick up all the furniture in this room? It goes back to your inventory.')) run((c) => c.pickUpAll());
+                setConfirmPickUpAll(true);
                 setSelectedFurni(null);
             }}
             onClose={() => {
@@ -608,6 +610,18 @@ const WorldClient = () => {
     return (
         <Box sx={{ position: 'fixed', inset: 0, bgcolor: '#000', overflow: 'hidden', fontFamily: habboTheme.typography.fontFamily }}>
             <Box ref={canvasHost} sx={{ position: 'absolute', left: 0, right: boardOpen ? { xs: 0, md: '50%' } : 0, top: 0, bottom: bottomSpace, touchAction: 'none' }} />
+            {confirmPickUpAll && (
+                <ConfirmWindow
+                    title="Pick up all"
+                    message="Pick up all the furniture in this room? It goes back to your inventory."
+                    confirmLabel="Pick up all"
+                    onCancel={() => setConfirmPickUpAll(false)}
+                    onConfirm={() => {
+                        setConfirmPickUpAll(false);
+                        run((c) => c.pickUpAll());
+                    }}
+                />
+            )}
             {boardOpen && room && clientRef.current && (
                 <Box sx={{ position: 'absolute', top: 0, right: 0, left: 0, bottom: bottomSpace, pointerEvents: 'none', '& > *': { pointerEvents: 'auto' } }}>
                     <BoardPanel client={clientRef.current} youId={room.youId} isHost={isHost} occupants={Object.values(occupants)} onClose={() => setBoardOpen(false)} />
@@ -686,6 +700,7 @@ const WorldClient = () => {
 
             {isOpen('create') && (
                 <CreateRoomDialog
+                    loadLayouts={() => run((c) => c.getLayouts()).then((l) => l ?? [])}
                     isTeacher={Boolean(profile?.isTeacher)}
                     onClose={() => toggle('create', false)}
                     onCreate={async (request) => {

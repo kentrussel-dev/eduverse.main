@@ -4,7 +4,7 @@ import { HabboWindow } from './HabboWindow';
 import { habbo } from './habboTheme';
 import { FurniImage } from './ShopDialog';
 import { CatalogItem, Dir } from '../types';
-import { FLOORS, WALLPAPERS } from '../roomStyles';
+import { FLOORS, SOLID_COLORS, solidId, WALLPAPERS } from '../roomStyles';
 
 const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
 
@@ -104,6 +104,13 @@ export const BuildPanel = (props: Props) => {
                             </Tooltip>
                         ))}
                     </Box>
+                    <Typography variant="caption" color="text.secondary">Plain wallpaper</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={0.4} mb={1} sx={{ maxHeight: 76, overflowY: 'auto' }}>
+                        {SOLID_COLORS.map((c) => (
+                            <ButtonBase key={c} aria-label={`Plain wallpaper ${hex(c)}`} onClick={() => props.onStyle(solidId(c), props.floor)}
+                                sx={{ width: 20, height: 20, borderRadius: 0.5, bgcolor: hex(c), border: props.wallpaper === solidId(c) ? '3px solid #000' : '1px solid rgba(0,0,0,0.35)' }} />
+                        ))}
+                    </Box>
                     <Typography variant="caption" color="text.secondary">Floor</Typography>
                     <Box display="flex" flexWrap="wrap" gap={0.5} mb={1}>
                         {FLOORS.map((f) => (
@@ -112,6 +119,13 @@ export const BuildPanel = (props: Props) => {
                                     sx={{ width: 28, height: 28, borderRadius: 1, border: props.floor === f.id ? '3px solid #000' : '1px solid rgba(0,0,0,0.4)',
                                         background: `conic-gradient(${hex(f.a)} 25%, ${hex(f.b)} 0 50%, ${hex(f.a)} 0 75%, ${hex(f.b)} 0)` }} />
                             </Tooltip>
+                        ))}
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">Plain floor</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={0.4} mb={1} sx={{ maxHeight: 76, overflowY: 'auto' }}>
+                        {SOLID_COLORS.map((c) => (
+                            <ButtonBase key={c} aria-label={`Plain floor ${hex(c)}`} onClick={() => props.onStyle(props.wallpaper, solidId(c))}
+                                sx={{ width: 20, height: 20, borderRadius: 0.5, bgcolor: hex(c), border: props.floor === solidId(c) ? '3px solid #000' : '1px solid rgba(0,0,0,0.35)' }} />
                         ))}
                     </Box>
                     <Button size="small" variant="outlined" color="error" onClick={props.onPickUpAll}>Pick up all furniture</Button>
