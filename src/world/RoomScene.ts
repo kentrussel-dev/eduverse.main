@@ -2,6 +2,7 @@ import { Application, Container, FederatedPointerEvent, Graphics, Text } from 'p
 import { AvatarSprite } from './avatar';
 import { Dir8, dirForFacing, dirForStep } from './directions';
 import { floorOf, wallpaperOf } from './roomStyles';
+import { footprint } from './furniAssets';
 import { depthOf, drawFurni, drawWhiteboard, isRug, isSeat } from './furni';
 import { flat, poly, project, screenToTile, shade, tileCenter } from './iso';
 import { ChatMessage, Dir, FurniItem, Occupant, RoomSnapshot } from './types';
@@ -352,7 +353,7 @@ export class RoomScene {
         this.seats.clear();
         for (const { item } of this.furni.values()) {
             if (isSeat(item.type)) {
-                this.seats.set(`${item.x},${item.y}`, item);
+                for (const [fx, fy] of footprint(item.type, item.x, item.y, item.dir)) this.seats.set(`${fx},${fy}`, item);
             }
         }
         for (const walker of this.walkers.values()) {
@@ -361,16 +362,20 @@ export class RoomScene {
     }
 
     private furniAt(x: number, y: number) {
-        const here = [...this.furni.values()].map((f) => f.item).filter((f) => f.x === x && f.y === y && f.type !== 'whiteboard');
+        const here = [...this.furni.values()].map((f) => f.item)
+            .filter((f) => f.type !== 'whiteboard' && footprint(f.type, f.x, f.y, f.dir).some(([fx, fy]) => fx === x && fy === y));
         // Prefer the item on top of a rug.
         return here.find((f) => !isRug(f.type)) ?? here[0];
     }
 
     /** Client-side check that mirrors the server's placement rules, for the ghost's color. */
-    private canPlace(type: string, x: number, y: number) {
-        if (!this.isFloor(x, y) || (x === this.room.doorX && y === this.room.doorY)) return false;
-        const here = [...this.furni.values()].map((f) => f.item).filter((f) => f.x === x && f.y === y);
-        return !here.some((f) => isRug(f.type) === isRug(type));
+    private canPlace(type: string, x: number, y: number, dir: Dir = 'se') {
+        const tiles = footprint(type, x, y, dir);
+        if (tiles.some(([tx, ty]) => !this.isFloor(tx, ty) || (tx === this.room.doorX && ty === this.room.doorY))) return false;
+        const taken = new Set([...this.furni.values()].map((f) => f.item)
+            .filter((f) => f.type !== 'whiteboard' && isRug(f.type) === isRug(type))
+            .flatMap((f) => footprint(f.type, f.x, f.y, f.dir).map(([fx, fy]) => `${fx},${fy}`)));
+        return !tiles.some(([tx, ty]) => taken.has(`${tx},${ty}`));
     }
 
     /** Turns build mode on (owner only) or off (null). */
@@ -395,7 +400,7 @@ export class RoomScene {
         const tile = this.hoverTile;
         if (!placing || !tile || !this.isFloor(tile.x, tile.y)) return;
         const views = drawFurni({ id: 'ghost', type: placing.type, x: tile.x, y: tile.y, dir: placing.dir });
-        const ok = this.canPlace(placing.type, tile.x, tile.y);
+        const ok = this.canPlace(placing.type, tile.x, tile.y, placing.dir);
         for (const view of views) {
             if (!ok) (view as Graphics).tint = 0xff4d4d;
             this.ghost.addChild(view);

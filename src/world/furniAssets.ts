@@ -9,6 +9,8 @@ import { Dir, FurniItem } from './types';
  * is and where the tile center (on the floor) sits in it.
  */
 export interface FurniAsset {
+    /** Footprint [w, d] in tiles when facing sw/ne (swapped for se/nw). */
+    size?: [number, number];
     name: string;
     category: string;
     seat: boolean;
@@ -37,6 +39,20 @@ export const loadFurniAssets = () => {
 
 export const furniAsset = (type: string): FurniAsset | undefined => manifest[type];
 
+/** Width (along x) and depth (along y) in tiles of a piece facing dir. */
+export const footprintSize = (type: string, dir: Dir): [number, number] => {
+    const [w, d] = manifest[type]?.size ?? [1, 1];
+    return dir === 'se' || dir === 'nw' ? [d, w] : [w, d];
+};
+
+/** The tiles a piece covers; (x, y) is its back corner. */
+export const footprint = (type: string, x: number, y: number, dir: Dir) => {
+    const [w, d] = footprintSize(type, dir);
+    const tiles: [number, number][] = [];
+    for (let dx = 0; dx < w; dx += 1) for (let dy = 0; dy < d; dy += 1) tiles.push([x + dx, y + dy]);
+    return tiles;
+};
+
 const bases = new Map<string, BaseTexture>();
 const textures = new Map<string, Texture>();
 
@@ -64,7 +80,8 @@ export const furniSprite = (item: FurniItem): Sprite | null => {
     const [, w, h, ax, ay] = asset.frames[dir];
     const sprite = new Sprite(frameTexture(item.type, dir));
     sprite.anchor.set(ax / w, ay / h);
-    const center = project(item.x + 0.5, item.y + 0.5);
+    const [fw, fd] = footprintSize(item.type, dir);
+    const center = project(item.x + fw / 2, item.y + fd / 2);
     sprite.position.set(center.x, center.y);
     return sprite;
 };

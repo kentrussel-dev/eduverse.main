@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
-import { furniAsset, furniSprite } from './furniAssets';
+import { furniAsset, furniSprite, footprintSize } from './furniAssets';
 import { flat, poly, prism, project } from './iso';
 import { FurniItem } from './types';
 
@@ -68,7 +68,9 @@ export const drawFurni = (item: FurniItem): Container[] => {
     const sprite = furniSprite(item);
     if (sprite) {
         // Rugs lie under everything; other pieces sort with people by their tile.
-        sprite.zIndex = furniAsset(item.type)?.walk ? depthOf(x, y, -90) : depthOf(x, y, 20);
+        // Big pieces sort by their front tile so people behind them are hidden correctly.
+        const [fw, fd] = footprintSize(item.type, item.dir);
+        sprite.zIndex = furniAsset(item.type)?.walk ? depthOf(x, y, -90) : depthOf(x + fw - 1, y + fd - 1, 20);
         return [sprite];
     }
     const g = new Graphics();
