@@ -126,6 +126,7 @@ export const useWorld = () => {
             setWhiteboard(text);
             sceneRef.current?.setWhiteboard(text);
         });
+        client.on('boardUpdated', (_scene: string, preview: string) => sceneRef.current?.setBoardPicture(preview));
         client.on('roomSettings', (settings: { quietMode?: boolean; bans?: RoomBan[] }) => {
             if (settings.bans) setBans(settings.bans);
             if (settings.quietMode !== undefined) {
@@ -227,6 +228,7 @@ export const useWorld = () => {
         notice,
         setNotice,
         run,
+        clientRef,
         refreshRooms,
         enterRoom,
     };

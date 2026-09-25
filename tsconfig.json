@@ -8,6 +8,7 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
+    "types": ["node", "jest"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,

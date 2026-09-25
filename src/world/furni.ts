@@ -1,4 +1,4 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { furniAsset, furniSprite } from './furniAssets';
 import { flat, poly, prism, project } from './iso';
 import { FurniItem } from './types';
@@ -320,6 +320,35 @@ export const drawWhiteboard = (item: FurniItem) => {
     text.skew.set(0, Math.atan(0.5));
     board.addChild(text);
 
+    // A picture of the drawing board, skewed onto the wall like the text; it covers the text.
+    const picture = new Sprite(Texture.EMPTY);
+    const corner = project(x0 + 0.04, y, 99);
+    picture.position.set(corner.x, corner.y);
+    picture.skew.set(0, Math.atan(0.5));
+    picture.visible = false;
+    board.addChild(picture);
+    const setPicture = (dataUrl: string) => {
+        if (!dataUrl) {
+            picture.visible = false;
+            text.visible = true;
+            return;
+        }
+        const texture = Texture.from(dataUrl);
+        const fit = () => {
+            // Keep the drawing's shape inside the board (3.8 tiles wide, 51px tall).
+            const maxW = (x1 - x0 - 0.08) * 32;
+            const maxH = 51;
+            const scale = Math.min(maxW / texture.width, maxH / texture.height);
+            picture.texture = texture;
+            picture.width = texture.width * scale;
+            picture.height = texture.height * scale;
+            picture.visible = true;
+            text.visible = false;
+        };
+        if (texture.baseTexture.valid) fit();
+        else texture.baseTexture.once('loaded', fit);
+    };
+
     const setText = (value: string) => {
         const lines = value.split('\n').slice(0, 4).map((line) => (line.length > 26 ? `${line.slice(0, 25)}…` : line));
         text.text = lines.join('\n');
@@ -328,5 +357,5 @@ export const drawWhiteboard = (item: FurniItem) => {
             text.text = text.text.slice(0, -2) + '…';
         }
     };
-    return { board, setText };
+    return { board, setText, setPicture };
 };

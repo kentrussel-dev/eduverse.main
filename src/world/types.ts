@@ -111,6 +111,8 @@ export interface RoomSnapshot {
     chat: ChatMessage[];
     whiteboard: string;
     quietMode: boolean;
+    /** A small picture of the drawing board, shown on the whiteboard in the room. */
+    boardPreview: string;
     youId: string;
     youAreHost: boolean;
     youAreOwner: boolean;
@@ -167,4 +169,13 @@ export interface CreateRoomRequest {
     description: string;
     kind: RoomKind;
     template: 'apartment' | 'house' | 'classroom' | 'study_hall' | 'lounge' | 'empty';
+}
+
+/** The shared drawing board: the Excalidraw scene (JSON), its picture, and who may draw. */
+export interface BoardState {
+    scene: string;
+    preview: string;
+    everyone: boolean;
+    /** Occupant ids the host let draw. */
+    drawers: string[];
 }
