@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@excalidraw/excalidraw": "^0.18.1",
     "@microsoft/signalr": "^8.0.29",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",

@@ -1,6 +1,6 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { tokenStore } from '../services/auth.service';
-import { AvatarLook, CatalogItem, CreateRoomRequest, Profile, RoomSettings, RoomSnapshot, RoomSummary } from './types';
+import { AvatarLook, BoardState, CatalogItem, CreateRoomRequest, Profile, RoomSettings, RoomSnapshot, RoomSummary } from './types';
 
 // REACT_APP_API_URL points at ".../api"; the hub lives next to it at "/hubs/world".
 const serverUrl = (process.env.REACT_APP_API_URL ?? 'http://localhost:5000/api').replace(/\/api\/?$/, '');
@@ -67,6 +67,12 @@ export class WorldClient {
     mute = (targetId: string, muted: boolean) => this.connection.invoke('Mute', targetId, muted);
     kick = (targetId: string, ban = false) => this.connection.invoke('Kick', targetId, ban);
     setWhiteboard = (text: string) => this.connection.invoke('SetWhiteboard', text);
+    // The drawing board
+    getBoard = () => this.connection.invoke<BoardState>('GetBoard');
+    updateBoard = (scene: string, preview: string) => this.connection.invoke('UpdateBoard', scene, preview);
+    clearBoard = () => this.connection.invoke('ClearBoard');
+    setBoardAccess = (everyone: boolean) => this.connection.invoke('SetBoardAccess', everyone);
+    allowBoardDrawer = (occupantId: string, allowed: boolean) => this.connection.invoke('AllowBoardDrawer', occupantId, allowed);
     setQuietMode = (quiet: boolean) => this.connection.invoke('SetQuietMode', quiet);
     clearChat = () => this.connection.invoke('ClearChat');
 }

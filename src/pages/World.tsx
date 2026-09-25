@@ -33,6 +33,8 @@ import { habbo, habboTheme } from '../world/ui/habboTheme';
 import { RoomSettingsDialog } from '../world/ui/RoomSettingsDialog';
 import { Coins, ShopDialog } from '../world/ui/ShopDialog';
 import { loadFurniAssets } from '../world/furniAssets';
+import { BoardPanel } from '../world/ui/BoardPanel';
+import DrawIcon from '@mui/icons-material/Draw';
 import {
     AvatarLook, CatalogItem, DANCES, Dir, EMOTES, Occupant, RoomKind, roomKindLabel, RoomSummary,
 } from '../world/types';
@@ -97,7 +99,15 @@ const WorldClient = () => {
     const world = useWorld();
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const { room, occupants, profile, status, run, sceneRef, catalog } = world;
+    const { room, occupants, profile, status, run, sceneRef, catalog, clientRef } = world;
+    // The drawing board docked on the right half of the screen.
+    const [boardOpen, setBoardOpen] = useState(false);
+    const hasBoard = Boolean(room?.furni.some((f) => f.type === 'whiteboard'));
+    // The room gets narrower when the board opens; tell Pixi so it resizes and re-centres.
+    useEffect(() => {
+        const id = window.requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+        return () => window.cancelAnimationFrame(id);
+    }, [boardOpen]);
     const phone = useMediaQuery('(max-width:600px)');
     const canvasHost = useRef<HTMLDivElement>(null);
     const chatInput = useRef<HTMLInputElement>(null);
@@ -158,7 +168,9 @@ const WorldClient = () => {
         setPlacing(null);
         setSelectedFurni(null);
         setSelectedId(null);
+        setBoardOpen(false);
         const scene = new RoomScene(canvasHost.current, room, {
+            onWhiteboardClick: () => setBoardOpen(true),
             onTileClick: (x, y) => {
                 run((c) => c.move(x, y));
             },
@@ -588,7 +600,12 @@ const WorldClient = () => {
 
     return (
         <Box sx={{ position: 'fixed', inset: 0, bgcolor: '#000', overflow: 'hidden', fontFamily: habboTheme.typography.fontFamily }}>
-            <Box ref={canvasHost} sx={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: bottomSpace, touchAction: 'none' }} />
+            <Box ref={canvasHost} sx={{ position: 'absolute', left: 0, right: boardOpen ? { xs: 0, md: '50%' } : 0, top: 0, bottom: bottomSpace, touchAction: 'none' }} />
+            {boardOpen && room && clientRef.current && (
+                <Box sx={{ position: 'absolute', top: 0, right: 0, left: 0, bottom: bottomSpace, pointerEvents: 'none', '& > *': { pointerEvents: 'auto' } }}>
+                    <BoardPanel client={clientRef.current} youId={room.youId} isHost={isHost} occupants={Object.values(occupants)} onClose={() => setBoardOpen(false)} />
+                </Box>
+            )}
 
             {/* Campus view when not in a room */}
             {!room && (
@@ -743,6 +760,11 @@ const WorldClient = () => {
 
                 {phone ? <Box flex={1} /> : <Box sx={{ flex: 1, minWidth: 200, display: 'flex', justifyContent: 'center', mx: 1 }}>{chatBox}</Box>}
 
+                {room && hasBoard && (
+                    <ToolbarButton label="Board" active={boardOpen} onClick={() => setBoardOpen(!boardOpen)}>
+                        <DrawIcon sx={{ color: '#fff' }} />
+                    </ToolbarButton>
+                )}
                 {room && (isClassroom || isHost) && (
                     <ToolbarButton label={isClassroom ? 'Classroom' : 'Room tools'} active={isOpen('class')} onClick={() => toggle('class')} badge={isHost ? raisedHands : undefined}>
                         <SchoolIcon sx={{ color: '#ffd166' }} />

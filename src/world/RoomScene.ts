@@ -35,6 +35,8 @@ export interface RoomSceneEvents {
     onPlaceFurni?: (x: number, y: number) => void;
     /** Build mode: a placed furni was clicked. */
     onFurniClick?: (furniId: string) => void;
+    /** The whiteboard was clicked (opens the drawing board). */
+    onWhiteboardClick?: () => void;
 }
 
 /** What the owner is doing in build mode: placing an item from the inventory, or just selecting. */
@@ -60,6 +62,7 @@ export class RoomScene {
     private build: BuildMode | null = null;
     private hoverTile: { x: number; y: number } | null = null;
     private setWhiteboardText: ((text: string) => void) | null = null;
+    private setWhiteboardPicture: ((dataUrl: string) => void) | null = null;
     private dragStart: { x: number; y: number; worldX: number; worldY: number } | null = null;
     private dragged = false;
 
@@ -83,6 +86,7 @@ export class RoomScene {
             this.addFurni(item);
         }
         this.setWhiteboardText?.(room.whiteboard);
+        this.setWhiteboardPicture?.(room.boardPreview);
 
         for (const occupant of room.occupants) {
             this.addOccupant(occupant);
@@ -268,7 +272,14 @@ export class RoomScene {
     addFurni(item: FurniItem) {
         this.removeFurni(item.id);
         if (item.type === 'whiteboard') {
-            const { board, setText } = drawWhiteboard(item);
+            const { board, setText, setPicture } = drawWhiteboard(item);
+            this.setWhiteboardPicture = setPicture;
+            board.eventMode = 'static';
+            board.cursor = 'pointer';
+            board.on('pointertap', (e) => {
+                e.stopPropagation();
+                this.events.onWhiteboardClick?.();
+            });
             this.world.addChildAt(board, 1);
             this.setWhiteboardText = setText;
             this.furni.set(item.id, { item, views: [board] });
@@ -556,5 +567,10 @@ export class RoomScene {
 
     setWhiteboard(text: string) {
         this.setWhiteboardText?.(text);
+    }
+
+    /** Shows a picture of the drawing board on the whiteboard (empty clears it). */
+    setBoardPicture(dataUrl: string) {
+        this.setWhiteboardPicture?.(dataUrl);
     }
 }
