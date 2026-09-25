@@ -459,6 +459,13 @@ const WorldClient = () => {
                 setSelectedFurni(null);
             }}
             onOpenShop={() => toggle('shop', true)}
+            wallpaper={room?.wallpaper ?? 'default'}
+            floor={room?.floor ?? 'default'}
+            onStyle={(w, f) => run((c) => c.setRoomStyle(w, f))}
+            onPickUpAll={() => {
+                if (window.confirm('Pick up all the furniture in this room? It goes back to your inventory.')) run((c) => c.pickUpAll());
+                setSelectedFurni(null);
+            }}
             onClose={() => {
                 toggle('inventory', false);
                 setPlacing(null);

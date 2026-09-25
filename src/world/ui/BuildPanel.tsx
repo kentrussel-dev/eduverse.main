@@ -4,6 +4,9 @@ import { HabboWindow } from './HabboWindow';
 import { habbo } from './habboTheme';
 import { FurniImage } from './ShopDialog';
 import { CatalogItem, Dir } from '../types';
+import { FLOORS, WALLPAPERS } from '../roomStyles';
+
+const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
 
 interface Props {
     /** Only a room's owner can place furniture there. */
@@ -18,6 +21,10 @@ interface Props {
     onPickUpSelected: () => void;
     onOpenShop: () => void;
     onClose: () => void;
+    onPickUpAll: () => void;
+    wallpaper: string;
+    floor: string;
+    onStyle: (wallpaper: string, floor: string) => void;
 }
 
 /**
@@ -84,6 +91,32 @@ export const BuildPanel = (props: Props) => {
                     </Typography>
                 )}
             </Box>
+            {canBuild && (
+                <Box mt={1.5} pt={1} borderTop={`1px solid ${habbo.border}`}>
+                    <Typography variant="subtitle2">Room design</Typography>
+                    <Typography variant="caption" color="text.secondary">Wallpaper</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={0.5} mb={1}>
+                        {WALLPAPERS.map((w) => (
+                            <Tooltip key={w.id} title={w.name}>
+                                <ButtonBase aria-label={`Wallpaper ${w.name}`} onClick={() => props.onStyle(w.id, props.floor)}
+                                    sx={{ width: 28, height: 28, borderRadius: 1, border: props.wallpaper === w.id ? '3px solid #000' : '1px solid rgba(0,0,0,0.4)',
+                                        background: w.accent !== undefined ? `repeating-linear-gradient(90deg, ${hex(w.color)} 0 5px, ${hex(w.accent)} 5px 8px)` : hex(w.color) }} />
+                            </Tooltip>
+                        ))}
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">Floor</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={0.5} mb={1}>
+                        {FLOORS.map((f) => (
+                            <Tooltip key={f.id} title={f.name}>
+                                <ButtonBase aria-label={`Floor ${f.name}`} onClick={() => props.onStyle(props.wallpaper, f.id)}
+                                    sx={{ width: 28, height: 28, borderRadius: 1, border: props.floor === f.id ? '3px solid #000' : '1px solid rgba(0,0,0,0.4)',
+                                        background: `conic-gradient(${hex(f.a)} 25%, ${hex(f.b)} 0 50%, ${hex(f.a)} 0 75%, ${hex(f.b)} 0)` }} />
+                            </Tooltip>
+                        ))}
+                    </Box>
+                    <Button size="small" variant="outlined" color="error" onClick={props.onPickUpAll}>Pick up all furniture</Button>
+                </Box>
+            )}
         </HabboWindow>
     );
 };
